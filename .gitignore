@@ -1,0 +1,15 @@
+/vendor
+.env
+.env.backup
+/node_modules
+/storage/*.key
+/public/hot
+/public/storage
+/config/v2board.php
+/bootstrap/cache/*
+.phpunit.result.cache
+.idea
+.DS_Store
+composer.phar
+workerman.log
+*.pid

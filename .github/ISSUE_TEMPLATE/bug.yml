@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a reproducible issue
+title: "[Bug] "
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Fill in the source_commit from release.json or `git rev-parse HEAD`
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: PHP and database versions, and the deployment method (PHP-FPM / Webman, source or release)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps and expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and screenshots
+      description: Remove passwords, APP_KEY, tokens, subscription links, and payment secrets
