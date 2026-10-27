@@ -36,42 +36,51 @@ Cboard is a proxy management panel that handles the full lifecycle of a proxy se
 
 ### Requirements
 
-- PHP 8.0 or higher
-- Composer
-- MySQL 5.7 or higher
-- Redis
+- Docker Engine with the Compose v2 plugin
+- A host port for the panel (defaults to `7001`)
 
 ### Installation
 
-Clone the repository and run the install script:
+Clone the repository and run the one-command installer:
 
 ```sh
-bash init.sh
+git clone https://github.com/ipevel/cboard
+cd cboard
+./init.sh
 ```
 
-This installs dependencies and runs the installation wizard, which creates the database schema and the first administrator account. After installation, configure your `.env` file with database and Redis connection details.
+The installer checks for Docker, generates `deploy/.env` with random credentials, starts the full stack (PHP-FPM, nginx, MySQL, Redis, and Horizon), waits for MySQL, and runs the installation wizard. It prints the site URL, the admin console URL, and the generated administrator password once at the end.
 
-### Queue Workers
-
-Cboard uses Laravel Horizon for queue processing. Start the queue workers with:
+Optionally set the administrator email up front and expose the panel on a custom port:
 
 ```sh
+ADMIN_ACCOUNT=admin@example.com CBOARD_PORT=8000 ./init.sh
+```
+
+The application image is pulled from `ghcr.io/ipevel/cboard:latest`. To run a locally built image instead, tag it and set `CBOARD_IMAGE` before starting the stack.
+
+### Updating
+
+Pull the latest image, recreate the containers, and apply database migrations:
+
+```sh
+./update.sh
+```
+
+### Manual installation (without Docker)
+
+Cboard is a standard Laravel application and runs on PHP 8.0 or higher, Composer, MySQL 5.7 or higher, and Redis.
+
+```sh
+composer install --no-dev --prefer-dist --optimize-autoloader
+cp .env.example .env
+php artisan key:generate
+# Edit .env with your database and Redis connection details.
+php artisan v2board:install
 php artisan horizon
 ```
 
-Configure the scheduler to run every minute for background tasks such as traffic updates, order checks, and subscription audit pruning.
-
-### Web Server
-
-Point your web server (Nginx, Apache, or PHP-FPM) at the `public/` directory. Cboard also supports running as a Webman application via `webman.php` or with PM2 via the included `pm2.yaml`.
-
-## Updating
-
-Run the update script to pull the latest code, install dependencies, and apply database migrations:
-
-```sh
-bash update.sh
-```
+Point your web server (Nginx, Apache, or PHP-FPM) at the `public/` directory. Cboard also supports running as a Webman application via `webman.php` or with PM2 via the included `pm2.yaml`. Configure the scheduler to run every minute for background tasks such as traffic updates, order checks, and subscription audit pruning.
 
 ## License
 

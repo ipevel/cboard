@@ -1,39 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+repo_root="$(pwd)"
+deploy_dir="${repo_root}/deploy"
+env_file="${deploy_dir}/.env"
 
-if ! command -v git >/dev/null 2>&1 || ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "Please deploy using Git and run this script from the application checkout." >&2
-    exit 1
-fi
-branch=$(git symbolic-ref --quiet --short HEAD) || {
-    echo "Detached HEAD: select the intended deployment branch before updating." >&2
-    exit 1
-}
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-    echo "Tracked files have local changes. Back them up and resolve them before updating." >&2
-    exit 1
-fi
-if command -v composer >/dev/null 2>&1; then
-    composer_command=(composer)
-elif [ -f composer.phar ]; then
-    composer_command=(php composer.phar)
-else
-    echo "Install Composer before updating." >&2
+if [ ! -f "$env_file" ]; then
+    echo "deploy/.env is missing. Run ./init.sh first." >&2
     exit 1
 fi
 
-git fetch origin "$branch"
-git merge --ff-only FETCH_HEAD
-if [ -f composer.lock ] && ! grep -q '"name": "lbuchs/webauthn"' composer.lock; then
-    # Add this new, pinned dependency without updating the existing framework.
-    "${composer_command[@]}" update lbuchs/webauthn --with-dependencies --no-dev --prefer-dist --optimize-autoloader
-fi
-"${composer_command[@]}" install --no-dev --prefer-dist --optimize-autoloader
-"${composer_command[@]}" check-platform-reqs --no-dev
-php artisan v2board:update
-php artisan config:cache
-php artisan view:clear
-php artisan horizon:terminate
+compose=(docker compose -f "${deploy_dir}/compose.yaml" --env-file "$env_file")
+image_ref="${CBOARD_IMAGE:-ghcr.io/ipevel/cboard:latest}"
 
-echo "Code and database update finished. Reload PHP-FPM or restart Webman, restore the scheduler and Horizon supervisor, then verify orders and subscriptions."
+echo "Pulling the latest images..."
+if ! "${compose[@]}" pull; then
+    if docker image inspect "$image_ref" >/dev/null 2>&1; then
+        echo "Registry pull failed; continuing with the local image ${image_ref}."
+    else
+        echo "Registry pull failed and ${image_ref} is not available locally." >&2
+        exit 1
+    fi
+fi
+
+echo "Recreating containers with the new image..."
+"${compose[@]}" up -d
+
+echo "Running database migrations and updates..."
+"${compose[@]}" exec -T app php artisan v2board:update
+
+echo "Rebuilding the configuration cache..."
+"${compose[@]}" exec -T app php artisan config:cache
+
+echo "Update complete."

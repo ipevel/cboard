@@ -1,0 +1,69 @@
+name: cboard
+
+services:
+  app:
+    image: ${CBOARD_IMAGE:-ghcr.io/ipevel/cboard:latest}
+    restart: unless-stopped
+    ports:
+      - "${CBOARD_PORT:-7001}:80"
+    volumes:
+      - ./.env:/www/.env:ro
+      - ./storage:/www/storage
+      - ./plugins:/www/plugins
+    environment:
+      ENABLE_WEB: "true"
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  horizon:
+    image: ${CBOARD_IMAGE:-ghcr.io/ipevel/cboard:latest}
+    restart: unless-stopped
+    command: ["php", "/www/artisan", "horizon"]
+    volumes:
+      - ./.env:/www/.env:ro
+      - ./storage:/www/storage
+      - ./plugins:/www/plugins
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cboard}
+      MYSQL_USER: ${MYSQL_USERNAME:-cboard}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  redis_data:
+  mysql_data:
