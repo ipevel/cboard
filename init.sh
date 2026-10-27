@@ -9,6 +9,45 @@ deploy_dir="${repo_root}/deploy"
 # Cboard one-command Docker installer
 # ---------------------------------------------------------------------------
 
+# --- 0. Guard: must run from a fresh cboard checkout ------------------------
+if [ ! -f "${repo_root}/deploy/compose.yaml" ]; then
+    echo "This does not look like a cboard checkout. Run this from the repository root after 'git clone https://github.com/ipevel/cboard'." >&2
+    exit 1
+fi
+
+# --- 0b. Parse flags --------------------------------------------------------
+build_local=0
+if [ "${CBOARD_BUILD:-0}" = "1" ]; then
+    build_local=1
+fi
+for arg in "$@"; do
+    case "$arg" in
+        --build) build_local=1 ;;
+        *) echo "Unknown option: $arg" >&2; exit 1 ;;
+    esac
+done
+
+# --- 0c. Resolve the app image ----------------------------------------------
+# Capture any CBOARD_IMAGE supplied by the environment before we decide.
+env_image="${CBOARD_IMAGE:-}"
+
+# Default to the published image. Only build locally when --build (or
+# CBOARD_BUILD=1) is given.
+if [ "$build_local" -eq 1 ]; then
+    CBOARD_IMAGE="cboard:local"
+    echo "Local build requested; using image cboard:local."
+else
+    CBOARD_IMAGE="ghcr.io/ipevel/cboard:latest"
+    # A stale CBOARD_IMAGE in the environment (e.g. cboard:local from an
+    # earlier session) must not silently override the published image. Ignore
+    # any reference without a registry host (no '/') unless --build was passed.
+    if [ -n "$env_image" ] && [[ "$env_image" != */* ]]; then
+        echo "Notice: ignoring CBOARD_IMAGE=${env_image} (local reference without a registry host)." >&2
+        echo "Using the published image ${CBOARD_IMAGE} instead. Pass --build to build locally." >&2
+    fi
+fi
+export CBOARD_IMAGE
+
 # --- 1. Preflight: docker + compose v2 --------------------------------------
 if ! command -v docker >/dev/null 2>&1; then
     echo "Docker is not installed. Install Docker Engine first, then re-run this script." >&2
@@ -84,8 +123,19 @@ if [ -n "${CBOARD_PORT:-}" ] && ! grep -q "^CBOARD_PORT=${CBOARD_PORT}$" "$env_f
     sed -i "s|^CBOARD_PORT=.*|CBOARD_PORT=${CBOARD_PORT}|" "$env_file"
 fi
 
-# --- 3. Start the stack -----------------------------------------------------
-echo "Pulling images and starting the stack..."
+# --- 3. Pull the app image up front, then start the stack -------------------
+if [ "$build_local" -eq 1 ]; then
+    echo "Building the local image ${CBOARD_IMAGE}..."
+    docker build -t "${CBOARD_IMAGE}" "${repo_root}"
+else
+    echo "Pulling the published image ${CBOARD_IMAGE}..."
+    if ! ( cd "${deploy_dir}" && docker compose pull app horizon ); then
+        echo "Failed to pull ${CBOARD_IMAGE}. Check registry access, or run './init.sh --build' to build locally." >&2
+        exit 1
+    fi
+fi
+
+echo "Starting the stack..."
 docker compose -f "${deploy_dir}/compose.yaml" --env-file "$env_file" up -d
 
 # --- 4. Wait for MySQL, then run the installer ------------------------------
