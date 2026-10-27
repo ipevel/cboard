@@ -49,19 +49,7 @@ Clone the repository and run the install script:
 bash init.sh
 ```
 
-This installs dependencies and runs the installation wizard. Alternatively, install manually:
-
-```sh
-composer install
-php artisan v2board:install
-```
-
-After installation, configure your `.env` file with database and Redis connection details, then run:
-
-```sh
-php artisan key:generate
-php artisan migrate --seed
-```
+This installs dependencies and runs the installation wizard, which creates the database schema and the first administrator account. After installation, configure your `.env` file with database and Redis connection details.
 
 ### Queue Workers
 
