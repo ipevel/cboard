@@ -11,6 +11,8 @@ class CommController extends Controller
 {
     public function config()
     {
+        $captcha = CaptchaService::publicSettings();
+        $captchaProvider = $captcha['captcha_provider'];
         return response([
             'data' => array_merge([
                 'tos_url' => config('v2board.tos_url'),
@@ -22,7 +24,11 @@ class CommController extends Controller
                 'app_description' => config('v2board.app_description'),
                 'app_url' => config('v2board.app_url'),
                 'logo' => config('v2board.logo'),
-            ], CaptchaService::publicSettings())
+                'app_name' => config('v2board.app_name'),
+                'is_register' => (int)config('v2board.stop_register', 0) ? 0 : 1,
+                'captcha_type' => $captchaProvider,
+                'turnstile_site_key' => $captchaProvider === 'turnstile' ? config('v2board.turnstile_site_key') : null,
+            ], $captcha)
         ]);
     }
 

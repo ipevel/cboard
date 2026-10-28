@@ -23,7 +23,8 @@ class CommController extends Controller
                 'commission_distribution_enable' => (int)config('v2board.commission_distribution_enable', 0),
                 'commission_distribution_l1' => config('v2board.commission_distribution_l1'),
                 'commission_distribution_l2' => config('v2board.commission_distribution_l2'),
-                'commission_distribution_l3' => config('v2board.commission_distribution_l3')
+                'commission_distribution_l3' => config('v2board.commission_distribution_l3'),
+                'min_withdraw_amount' => (int)config('v2board.commission_withdraw_limit', 100)
             ]
         ]);
     }

@@ -1,67 +1,103 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <link rel="stylesheet" href="/theme/{{$theme}}/assets/components.chunk.css?v={{$version}}">
-    <link rel="stylesheet" href="/theme/{{$theme}}/assets/umi.css?v={{$version}}">
-    @if (file_exists(public_path("/theme/{$theme}/assets/custom.css")))
-        <link rel="stylesheet" href="/theme/{{$theme}}/assets/custom.css?v={{$version}}">
-    @endif
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
-    @php ($colors = [
-        'darkblue' => '#3b5998',
-        'black' => '#343a40',
-        'default' => '#0665d0',
-        'green' => '#319795'
-    ])
-    <meta name="theme-color" content="{{$colors[$theme_config['theme_color']]}}">
-
-    <title>{{$title}}</title>
-    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700"> -->
-    <script>window.routerBase = "/";</script>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- 静态头不写死品牌：标题与图标由下方引导脚本按后台站点配置即时填充 -->
+    <title></title>
     <script>
-        window.settings = {
-            title: '{{$title}}',
-            assets_path: '/theme/{{$theme}}/assets',
-            theme: {
-                sidebar: '{{$theme_config['theme_sidebar']}}',
-                header: '{{$theme_config['theme_header']}}',
-                color: '{{$theme_config['theme_color']}}',
-            },
-            version: '{{$version}}',
-            background_url: '{{$theme_config['background_url']}}',
-            description: '{{$description}}',
-            i18n: [
-                'zh-CN',
-                'en-US',
-                'ja-JP',
-                'vi-VN',
-                'ko-KR',
-                'zh-TW',
-                'fa-IR'
-            ],
-            logo: '{{$logo}}'
+      /*
+       * 首屏语言标记：应用语言包尚未加载时，先按存储的语言或浏览器语言写入 html lang，
+       * 避免文档语言声明与实际界面语言短暂不一致。应用内 i18n 加载后会再校准一次。
+       */
+      (function () {
+        try {
+          var stored = localStorage.getItem('language');
+          var lang =
+            stored === 'zh-CN' || stored === 'en-US'
+              ? stored
+              : (navigator.language || '').toLowerCase().indexOf('zh') === 0
+                ? 'zh-CN'
+                : 'en-US';
+          document.documentElement.setAttribute('lang', lang);
+        } catch (e) {
+          /* 存储不可用时保留静态声明 */
         }
+      })();
     </script>
-    <script src="/theme/{{$theme}}/assets/i18n/zh-CN.js?v={{$version}}"></script>
-    <script src="/theme/{{$theme}}/assets/i18n/zh-TW.js?v={{$version}}"></script>
-    <script src="/theme/{{$theme}}/assets/i18n/en-US.js?v={{$version}}"></script>
-    <script src="/theme/{{$theme}}/assets/i18n/ja-JP.js?v={{$version}}"></script>
-    <script src="/theme/{{$theme}}/assets/i18n/vi-VN.js?v={{$version}}"></script>
-    <script src="/theme/{{$theme}}/assets/i18n/ko-KR.js?v={{$version}}"></script>
-    <script src="/theme/{{$theme}}/assets/i18n/fa-IR.js?v={{$version}}"></script>
-</head>
+    
+    <script>
+      /*
+       * 站点品牌引导：在应用包加载前先取一次后台站点配置，让标签标题与图标在首帧就跟着后台，
+       * 避免出现构建期静态值（旧项目名与旧图标）再被 JavaScript 覆盖的闪烁。
+       * 取回的 Promise 挂在 window 上，应用内的站点配置请求直接复用，不额外发请求。
+       */
+      (function () {
+        var cfg = (window.EZ_CONFIG || {}).API_CONFIG || {};
+        var base = '/api/v1';
 
-<body>
-<div id="root"></div>
-{!! $theme_config['custom_html'] !!}
-<script src="/theme/{{$theme}}/assets/vendors.async.js?v={{$version}}"></script>
-<script src="/theme/{{$theme}}/assets/components.async.js?v={{$version}}"></script>
-<script src="/theme/{{$theme}}/assets/umi.js?v={{$version}}"></script>
-@if (file_exists(public_path("/theme/{$theme}/assets/custom.js")))
-    <script src="/theme/{{$theme}}/assets/custom.js?v={{$version}}"></script>
-@endif
-</body>
+        if (cfg.urlMode === 'static' && cfg.staticBaseUrl && cfg.staticBaseUrl[0]) {
+          base = String(cfg.staticBaseUrl[0]).replace(/\/+$/, '');
+        } else if (typeof window !== 'undefined') {
+          base = window.location.origin + '/api/v1';
+        }
 
+        window.__EZ_SITE_CONFIG_PROMISE__ = fetch(base + '/guest/comm/config')
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (json) {
+            var d = (json && json.data) || {};
+
+            document.title = d.app_name || 'Cboard';
+
+            // 后台未配置 logo 时回退到主题内置的品牌图标
+            var iconHref = d.logo || '/theme/default/images/logo.png';
+
+            (function () {
+              var link = document.querySelector('link[rel~="icon"]');
+
+              if (!link) {
+                link = document.createElement('link');
+                link.setAttribute('rel', 'icon');
+                document.head.appendChild(link);
+              }
+
+              link.removeAttribute('type');
+              link.setAttribute('href', iconHref);
+            })();
+
+            return json;
+          })
+          .catch(function () {
+            return null;
+          });
+      })();
+    </script>
+    <style>@media (width>=769px){html,body,div,main,section,article,aside,nav{scrollbar-width:none!important;-ms-overflow-style:none!important}::-webkit-scrollbar{background:0 0!important;width:0!important;height:0!important;display:none!important}::-webkit-scrollbar-button{background:0 0!important;width:0!important;height:0!important;display:none!important}::-webkit-scrollbar-track{background:0 0!important;width:0!important;height:0!important;display:none!important}::-webkit-scrollbar-track-piece{background:0 0!important;width:0!important;height:0!important;display:none!important}::-webkit-scrollbar-thumb{background:0 0!important;width:0!important;height:0!important;display:none!important}::-webkit-scrollbar-corner{background:0 0!important;width:0!important;height:0!important;display:none!important}::-webkit-resizer{background:0 0!important;width:0!important;height:0!important;display:none!important}}html,body{width:100%;height:100%}@media (width>=769px){*{scrollbar-width:none!important;-ms-overflow-style:none!important}}html,body{width:100%;height:100%;margin:0;padding:0;overflow-x:hidden}#app{width:100%;height:100%}html.preloader-active,body.preloader-active{overflow:hidden!important}</style>
+    <script type="module" crossorigin src="/theme/default/static/index-DLrBkAz5.js"></script>
+      <link rel="modulepreload" crossorigin href="/theme/default/static/vue-CZVGrrJU.js" />
+    <script>
+        // 已登录时把面板主包与共享分块也加入预载，与入口包并行下载，省掉串行往返
+        (function () {
+          try {
+            if (!localStorage.getItem('token')) return;
+            var urls = ['/theme/default/static/appInit-CtooIgvh.js', '/theme/default/static/vendor-WQILJFCX.js', '/theme/default/static/icons-DSM2tnkg.js'];
+            urls.forEach(function (href) {
+              var link = document.createElement('link');
+              link.rel = 'modulepreload';
+              link.crossOrigin = 'anonymous';
+              link.href = href;
+              document.head.appendChild(link);
+            });
+          } catch (e) {
+            // 预载失败不影响正常加载
+          }
+        })();
+      </script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
 </html>
