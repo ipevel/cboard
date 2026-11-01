@@ -859,3 +859,8 @@ CHANGE `action_value` `action_value` text NULL AFTER `action`;
 
 ALTER TABLE `v2_server_v2node`
 ADD `trusted_x_forwarded_for` varchar(255) COLLATE 'utf8mb4_general_ci' NULL COMMENT '信任的x-forwarded-for头部' AFTER `network_settings`;
+
+-- Telegram 管理身份与订阅绑定分离，需由管理员在后台单独设置
+ALTER TABLE `v2_user` ADD `telegram_admin_id` bigint(20) DEFAULT NULL;
+ALTER TABLE `v2_user` ADD UNIQUE INDEX `v2_user_telegram_admin_id_unique` (`telegram_admin_id`);
+ALTER TABLE `v2_user` ADD `telegram_admin_version` bigint(20) unsigned NOT NULL DEFAULT '0';

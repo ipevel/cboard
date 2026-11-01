@@ -137,6 +137,7 @@ class EmailVerificationService
                 $user->password = password_hash($password, PASSWORD_DEFAULT); $user->password_algo = null; $user->password_salt = null;
                 if (!$user->save()) abort(500, __('Reset failed'));
                 PasskeyService::revokeOnRecovery($user);
+                TelegramService::revokeManagementBinding($user);
                 Cache::forget($attemptKey);
             });
         });
