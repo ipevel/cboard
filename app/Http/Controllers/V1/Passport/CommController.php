@@ -4,20 +4,15 @@ namespace App\Http\Controllers\V1\Passport;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Passport\CommSendEmailVerify;
-use App\Jobs\SendEmailJob;
 use App\Models\InviteCode;
-use App\Models\User;
-use App\Utils\CacheKey;
+use App\Services\CaptchaService;
+use App\Services\EmailAddress;
+use App\Services\EmailIdentity;
+use App\Services\EmailVerificationService;
 use App\Utils\Dict;
 use App\Utils\Helper;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Mail;
-use App\Services\CaptchaService;
 use Illuminate\Support\Facades\RateLimiter;
-
-use function PHPUnit\Framework\isEmpty;
 
 class CommController extends Controller
 {
@@ -37,56 +32,34 @@ class CommController extends Controller
         RateLimiter::hit($ip, 60);
 
         app(CaptchaService::class)->verify($request);
-        $email = $request->input('email');
-        $cacheKeyEmail = strtolower(trim((string)$email));
-        $isforget = $request->input('isforget');
-        $email_exists = User::where('email', $email)->exists();
-        //检查是否在白名单内
-        if ((int)config('v2board.email_whitelist_enable', 0)) {
-            if (!Helper::emailSuffixVerify(
-                $request->input('email'),
-                config('v2board.email_whitelist_suffix', Dict::EMAIL_WHITELIST_SUFFIX_DEFAULT))
-            ) {
-                abort(500, __('Email suffix is not in the Whitelist'));
-            }
+        $email = EmailAddress::normalize($request->input('email'));
+        $mode = $request->input('isforget');
+        if (!in_array($mode, [null, 0, 1, '0', '1'], true)) abort(422, '验证码用途无效');
+        if ((int)config('v2board.email_whitelist_enable', 0) && !Helper::emailSuffixVerify($email,
+            config('v2board.email_whitelist_suffix', Dict::EMAIL_WHITELIST_SUFFIX_DEFAULT))) {
+            abort(500, __('Email suffix is not in the Whitelist'));
         }
-        // 检查是否是gmail别名邮箱
         if ((int)config('v2board.email_gmail_limit_enable', 0)) {
-            $prefix = explode('@', $request->input('email'))[0];
-            if (strpos($prefix, '.') !== false || strpos($prefix, '+') !== false) {
-                abort(500, __('Gmail alias is not supported'));
-            }
+            $prefix = substr($email, 0, strrpos($email, '@'));
+            if (strpos($prefix, '.') !== false || strpos($prefix, '+') !== false) abort(500, __('Gmail alias is not supported'));
         }
-        if (isset($isforget)) {
-            if ($isforget == 0 && $email_exists) {
-                abort(500, __('This email is registered'));
-            } 
-            if ($isforget == 1 && !$email_exists) {
-                abort(500, __('This email is not registered in the system'));
-            }
-        }
-        if (Cache::get(CacheKey::get('LAST_SEND_EMAIL_VERIFY_TIMESTAMP', $cacheKeyEmail))) {
-            abort(500, __('Email verification code has been sent, please request again later'));
-        }
-        $code = (string)rand(100000, 999999);
-        $subject = config('v2board.app_name', 'Cboard') . __('Email verification code');
-
-        SendEmailJob::dispatch([
-            'email' => $email,
-            'subject' => $subject,
-            'template_name' => 'verify',
-            'template_value' => [
-                'name' => config('v2board.app_name', 'Cboard'),
-                'code' => $code,
-                'url' => config('v2board.app_url')
-            ]
-        ]);
-
-        Cache::put(CacheKey::get('EMAIL_VERIFY_CODE', $cacheKeyEmail), $code, 300);
-        Cache::put(CacheKey::get('LAST_SEND_EMAIL_VERIFY_TIMESTAMP', $cacheKeyEmail), time(), 60);
+        $codes = app(EmailVerificationService::class);
+        if ($mode === 1 || $mode === '1') $codes->sendRecovery($email);
+        elseif ($mode === 0 || $mode === '0') $codes->sendRegistration($email);
+        else $this->sendLegacyPurposeCode($codes, $email); // 未声明用途：按邮箱是否已注册推断，保持既有前端可用
         return response([
             'data' => true
         ]);
+    }
+
+    /**
+     * 兼容未传 isforget 的调用方：已注册邮箱按找回密码发码，未注册邮箱按注册发码。
+     * 已注册邮箱的收件人始终取库内存储地址，不采用调用方拼写。
+     */
+    private function sendLegacyPurposeCode(EmailVerificationService $codes, string $email): void
+    {
+        if (EmailIdentity::find($email)) $codes->sendRecovery($email);
+        else $codes->sendRegistration($email);
     }
 
     public function pv(Request $request)

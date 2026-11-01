@@ -6,23 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Passport\AuthForget;
 use App\Http\Requests\Passport\AuthLogin;
 use App\Http\Requests\Passport\AuthRegister;
-use App\Jobs\SendEmailJob;
 use App\Models\InviteCode;
 use App\Models\Plan;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\CaptchaService;
+use App\Services\EmailAddress;
+use App\Services\EmailIdentity;
+use App\Services\EmailVerificationService;
 use App\Utils\CacheKey;
 use App\Utils\Dict;
 use App\Utils\Helper;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Services\CaptchaService;
 
 class AuthController extends Controller
 {
     public function register(AuthRegister $request)
     {
+        $email = EmailAddress::normalize($request->input('email'), true);
+        $emailKey = EmailAddress::key($email);
         if ((int)config('v2board.register_limit_by_ip_enable', 0)) {
             $registerCountByIP = Cache::get(CacheKey::get('REGISTER_IP_RATE_LIMIT', $request->ip())) ?? 0;
             if ((int)$registerCountByIP >= (int)config('v2board.register_limit_count', 3)) {
@@ -34,14 +39,14 @@ class AuthController extends Controller
         app(CaptchaService::class)->verify($request);
         if ((int)config('v2board.email_whitelist_enable', 0)) {
             if (!Helper::emailSuffixVerify(
-                $request->input('email'),
+                $email,
                 config('v2board.email_whitelist_suffix', Dict::EMAIL_WHITELIST_SUFFIX_DEFAULT))
             ) {
                 abort(500, __('Email suffix is not in the Whitelist'));
             }
         }
         if ((int)config('v2board.email_gmail_limit_enable', 0)) {
-            $prefix = explode('@', $request->input('email'))[0];
+            $prefix = explode('@', $email)[0];
             if (strpos($prefix, '.') !== false || strpos($prefix, '+') !== false) {
                 abort(500, __('Gmail alias is not supported'));
             }
@@ -54,86 +59,89 @@ class AuthController extends Controller
                 abort(500, __('You must use the invitation code to register'));
             }
         }
-        $email = $request->input('email');
-        $cacheKeyEmail = is_string($email) ? strtolower(trim($email)) : '';
-        if ((int)config('v2board.email_verify', 0)) {
-            $inputCode = $request->input('email_code');
-            if (!is_string($inputCode) || !preg_match('/^\d{6}$/', $inputCode)) {
-                abort(500, __('Incorrect email verification code'));
+        $verify = (int)config('v2board.email_verify', 0);
+        $operation = function () use ($request, $email, $emailKey, $verify) {
+            $ipKey = CacheKey::get('REGISTER_IP_RATE_LIMIT', $request->ip());
+            $limited = (int)config('v2board.register_limit_by_ip_enable', 0);
+            $count = (int)Cache::get($ipKey, 0);
+            if ($limited && $count >= (int)config('v2board.register_limit_count', 3)) {
+                abort(500, __('Register frequently, please try again after :minute minute', [
+                    'minute' => config('v2board.register_limit_expire', 60)
+                ]));
             }
-            $cachedCode = Cache::get(CacheKey::get('EMAIL_VERIFY_CODE', $cacheKeyEmail));
-            if ($cachedCode === null || $cachedCode === '' || !hash_equals((string)$cachedCode, $inputCode)) {
-                abort(500, __('Incorrect email verification code'));
-            }
-        }
-        $password = $request->input('password');
-        $exist = User::where('email', $email)->first();
-        if ($exist) {
-            abort(500, __('Email already exists'));
-        }
-        $user = new User();
-        $user->email = $email;
-        $user->password = password_hash($password, PASSWORD_DEFAULT);
-        $user->uuid = Helper::guid(true);
-        $user->token = Helper::guid();
-        if ($request->input('invite_code')) {
-            $inviteCode = InviteCode::where('code', $request->input('invite_code'))
-                ->where('status', 0)
-                ->first();
-            if (!$inviteCode) {
-                if ((int)config('v2board.invite_force', 0)) {
+            return DB::transaction(function () use ($request, $email, $emailKey, $verify, $ipKey, $limited, $count) {
+                EmailIdentity::assertAvailable($email);
+                $emailProof = null;
+                if ($verify) {
+                    $emailProof = app(EmailVerificationService::class)->registrationProof($email, $request->input('email_code'));
+                }
+                $invite = null;
+                if ($request->input('invite_code')) {
+                    $invite = InviteCode::where('code', $request->input('invite_code'))
+                        ->where('status', 0)
+                        ->lockForUpdate()
+                        ->first();
+                }
+                if ((int)config('v2board.invite_force', 0) && !$invite) {
                     abort(500, __('Invalid invitation code'));
                 }
-            } else {
-                $user->invite_user_id = $inviteCode->user_id ? $inviteCode->user_id : null;
-                if (!(int)config('v2board.invite_never_expire', 0)) {
-                    $inviteCode->status = 1;
-                    $inviteCode->save();
+                $user = new User();
+                $user->email = $emailProof ? $emailProof['recipient'] : $email;
+                $user->password = password_hash($request->input('password'), PASSWORD_DEFAULT);
+                $user->uuid = Helper::guid(true);
+                $user->token = Helper::guid();
+                if ($invite) {
+                    $user->invite_user_id = $invite->user_id ? $invite->user_id : null;
                 }
-            }
+
+                // try out
+                if ((int)config('v2board.try_out_plan_id', 0)) {
+                    $plan = Plan::find(config('v2board.try_out_plan_id'));
+                    if ($plan) {
+                        $user->transfer_enable = $plan->transfer_enable * 1073741824;
+                        $user->device_limit = $plan->device_limit;
+                        $user->plan_id = $plan->id;
+                        $user->group_id = $plan->group_id;
+                        $user->expired_at = time() + (config('v2board.try_out_hour', 1) * 3600);
+                        $user->speed_limit = $plan->speed_limit;
+                    }
+                }
+
+                $user->last_login_at = time();
+                if (!$user->save()) {
+                    abort(500, __('Register failed'));
+                }
+                if ($invite && !(int)config('v2board.invite_never_expire', 0)) {
+                    $invite->status = 1;
+                    $invite->save();
+                }
+                if ($limited && !Cache::put(
+                    $ipKey,
+                    $count + 1,
+                    max(1, (int)config('v2board.register_limit_expire', 60)) * 60
+                )) {
+                    abort(503, '注册服务暂时不可用');
+                }
+                if ($verify) {
+                    app(EmailVerificationService::class)->consumeRegistration($email, $emailProof);
+                }
+                return (new AuthService($user))->generateAuthData($request);
+            }, 3);
+        };
+        try {
+            $data = Cache::lock('REGISTER_EMAIL_' . hash('sha256', $emailKey), 30)->block(3, function () use ($request, $operation) {
+                if (!(int)config('v2board.register_limit_by_ip_enable', 0)) return $operation();
+                return Cache::lock('REGISTER_IP_' . hash('sha256', $request->ip()), 30)->block(3, $operation);
+            });
+        } catch (LockTimeoutException $error) {
+            abort(503, '注册服务繁忙，请稍后重试');
         }
-
-        // try out
-        if ((int)config('v2board.try_out_plan_id', 0)) {
-            $plan = Plan::find(config('v2board.try_out_plan_id'));
-            if ($plan) {
-                $user->transfer_enable = $plan->transfer_enable * 1073741824;
-                $user->device_limit = $plan->device_limit;
-                $user->plan_id = $plan->id;
-                $user->group_id = $plan->group_id;
-                $user->expired_at = time() + (config('v2board.try_out_hour', 1) * 3600);
-                $user->speed_limit = $plan->speed_limit;
-            }
-        }
-
-        if (!$user->save()) {
-            abort(500, __('Register failed'));
-        }
-        if ((int)config('v2board.email_verify', 0)) {
-            Cache::forget(CacheKey::get('EMAIL_VERIFY_CODE', $cacheKeyEmail));
-        }
-
-        $user->last_login_at = time();
-        $user->save();
-
-        if ((int)config('v2board.register_limit_by_ip_enable', 0)) {
-            Cache::put(
-                CacheKey::get('REGISTER_IP_RATE_LIMIT', $request->ip()),
-                (int)$registerCountByIP + 1,
-                (int)config('v2board.register_limit_expire', 60) * 60
-            );
-        }
-
-        $authService = new AuthService($user);
-
-        return response()->json([
-            'data' => $authService->generateAuthData($request)
-        ]);
+        return response()->json(['data' => $data]);
     }
 
     public function login(AuthLogin $request)
     {
-        $email = $request->input('email');
+        $email = EmailAddress::key($request->input('email'));
         $password = $request->input('password');
 
         if ((int)config('v2board.password_limit_enable', 1)) {
@@ -145,7 +153,7 @@ class AuthController extends Controller
             }
         }
 
-        $user = User::where('email', $email)->first();
+        $user = EmailIdentity::find($email);
         if (!$user) {
             abort(500, __('Incorrect email or password'));
         }
@@ -213,46 +221,11 @@ class AuthController extends Controller
 
     public function forget(AuthForget $request)
     {
-        $email     = $request->input('email');
-        $inputCode = $request->input('email_code');
-        $password  = $request->input('password');
-
-        if (!is_string($email) || !is_string($inputCode) || !is_string($password)) {
-            abort(500, __('Incorrect email verification code'));
-        }
-        if (!preg_match('/^\d{6}$/', $inputCode)) {
-            abort(500, __('Incorrect email verification code'));
-        }
-
-        $cacheKeyEmail         = strtolower(trim($email));
-        $forgetRequestLimitKey = CacheKey::get('FORGET_REQUEST_LIMIT', $cacheKeyEmail);
-        $forgetRequestLimit    = (int)Cache::get($forgetRequestLimitKey);
-        if ($forgetRequestLimit >= 3) {
-            abort(500, __('Reset failed, Please try again later'));
-        }
-
-        $cachedCode = Cache::get(CacheKey::get('EMAIL_VERIFY_CODE', $cacheKeyEmail));
-        if ($cachedCode === null || $cachedCode === '' || !hash_equals((string)$cachedCode, $inputCode)) {
-            Cache::put($forgetRequestLimitKey, $forgetRequestLimit + 1, 300);
-            abort(500, __('Incorrect email verification code'));
-        }
-        DB::transaction(function () use ($email, $password, $cacheKeyEmail, $inputCode) {
-            $user = User::where('email', $email)->lockForUpdate()->first();
-            if (!$user) {
-                abort(500, __('This email is not registered in the system'));
-            }
-            // Another reset may have consumed the code while this request waited.
-            $currentCode = Cache::get(CacheKey::get('EMAIL_VERIFY_CODE', $cacheKeyEmail));
-            if (!is_scalar($currentCode) || !hash_equals((string)$currentCode, $inputCode)) abort(500, __('Incorrect email verification code'));
-            $user->password      = password_hash($password, PASSWORD_DEFAULT);
-            $user->password_algo = null;
-            $user->password_salt = null;
-            if (!$user->save()) {
-                abort(500, __('Reset failed'));
-            }
-            Cache::forget(CacheKey::get('EMAIL_VERIFY_CODE', $cacheKeyEmail));
-            \App\Services\PasskeyService::revokeOnRecovery($user);
-        }, 3);
+        app(EmailVerificationService::class)->recover(
+            $request->input('email'),
+            $request->input('email_code'),
+            $request->input('password')
+        );
         return response([
             'data' => true
         ]);
