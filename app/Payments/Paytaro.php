@@ -7,6 +7,8 @@
 
 namespace App\Payments;
 
+use App\Utils\Money;
+
 class Paytaro
 {
     const GATEWAY_URL = 'https://v3.paytaro.com';
@@ -102,9 +104,17 @@ class Paytaro
         if (isset($params['pid']) && (!$this->hasIdentifier($params['pid']) || (string) $params['pid'] !== $this->appId())) {
             return false;
         }
+        // The receipt must state a positive CNY amount; settlement compares it to the frozen order total.
+        $amount = $params['money'] ?? null;
+        $cents = Money::toCents($amount);
+        if ($cents === null || $cents <= 0 || (isset($params['currency']) && strtoupper((string)$params['currency']) !== 'CNY')) return false;
+
         return [
             'trade_no' => (string) $params['out_trade_no'],
             'callback_no' => (string) $params['trade_no'],
+            'amount' => $amount,
+            'currency' => 'CNY',
+            'expected_currency' => 'CNY',
             'custom_result' => 'success',
         ];
     }

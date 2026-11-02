@@ -3,6 +3,7 @@
 namespace App\Payments;
 
 use \Curl\Curl;
+use App\Utils\Money;
 
 /**
  * V2Board EPay MAPI adapter.
@@ -139,9 +140,17 @@ class EPayQrcode
             return false;
         }
 
+        // The receipt must state a positive CNY amount; settlement compares it to the frozen order total.
+        $amount = $params['money'] ?? null;
+        $cents = Money::toCents($amount);
+        if ($cents === null || $cents <= 0 || (isset($params['currency']) && strtoupper((string)$params['currency']) !== 'CNY')) return false;
+
         return [
             'trade_no' => trim((string) $params['out_trade_no']),
             'callback_no' => trim((string) $params['trade_no']),
+            'amount' => $amount,
+            'currency' => 'CNY',
+            'expected_currency' => 'CNY',
         ];
     }
 
