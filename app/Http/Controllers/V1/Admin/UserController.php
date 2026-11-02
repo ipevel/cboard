@@ -81,8 +81,27 @@ class UserController extends Controller
             ->orderBy($sort, $sortType);
         $this->filter($request, $userModel);
         $total = $userModel->count();
-        $res = $userModel->forPage($current, $pageSize)
-            ->get();
+        if ($request->input('sort') === 'alive_ip') {
+            // Online counts live in the cache. Sort the filtered population before paging.
+            $ids = (clone $userModel)->reorder()->pluck('id')->all();
+            $counts = [];
+            foreach (array_chunk($ids, 500) as $chunk) {
+                $keys = array_map(function ($id) { return 'ALIVE_IP_USER_' . $id; }, $chunk);
+                foreach (Cache::many($keys) as $key => $value) {
+                    $counts[(int)substr($key, strlen('ALIVE_IP_USER_'))] = (int)($value['alive_ip'] ?? 0);
+                }
+            }
+            $direction = $request->input('sort_type') === 'ASC' ? 1 : -1;
+            usort($ids, function ($a, $b) use ($counts, $direction) {
+                return (($counts[$a] ?? 0) <=> ($counts[$b] ?? 0)) * $direction ?: $a <=> $b;
+            });
+            $pageIds = array_slice($ids, ($current - 1) * $pageSize, $pageSize);
+            $positions = array_flip($pageIds);
+            $res = $userModel->reorder()->whereIntegerInRaw('id', $pageIds)->get()
+                ->sortBy(function ($user) use ($positions) { return $positions[$user->id]; })->values();
+        } else {
+            $res = $userModel->forPage($current, $pageSize)->get();
+        }
         $plan = Plan::get();
         for ($i = 0; $i < count($res); $i++) {
             for ($k = 0; $k < count($plan); $k++) {
