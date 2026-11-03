@@ -27,6 +27,14 @@ fail() { echo "ENV: $*" >&2; exit 2; }
 [ -d "$PRE_TREE" ] || fail "set DEEP_PRE_TREE to a checkout of the pre-fix commit (da53f6d)"
 command -v docker >/dev/null || fail "docker is required"
 
+# The PHP image must carry the driver the chosen database needs. Without this
+# check a pdo_mysql-less image (e.g. plain php:8.2-cli) yields 70 "could not
+# find driver" errors that look like code failures but are purely environmental.
+need_ext="pdo_sqlite"
+[ "$DB_DRIVER" = "mysql" ] && need_ext="pdo_mysql"
+docker run --rm --entrypoint php "$PHP_IMAGE" -m 2>/dev/null | grep -qi "^${need_ext}$" \
+    || fail "PHP image $PHP_IMAGE lacks ${need_ext} (required for P1_DB_DRIVER=$DB_DRIVER)"
+
 mkdir -p "$OUT_DIR"
 
 run_php() { # run_php <source-root> <php-file> [extra env...]
