@@ -1,0 +1,55 @@
+{
+    "tree": "/pre",
+    "php": "8.2.35",
+    "attack_inputs": {
+        "A": "POST /api/v1/passport/auth/login from 203.0.113.7, 80 attempts, rotating nobodyN@example.test, password \"wrong-password\"",
+        "B": "same endpoint and password, 10 attempts, one existing account limit-b@example.test",
+        "C": "8 concurrent workers, one account, password \"wrong-password\", error limit raised to 100"
+    },
+    "A_spray_80_from_one_ip": {
+        "500 Incorrect email or password": 80
+    },
+    "B_same_account_10_attempts": {
+        "1": {
+            "status": 500,
+            "body": "Incorrect email or password"
+        },
+        "2": {
+            "status": 500,
+            "body": "Incorrect email or password"
+        },
+        "3": {
+            "status": 500,
+            "body": "Incorrect email or password"
+        },
+        "4": {
+            "status": 500,
+            "body": "Incorrect email or password"
+        },
+        "5": {
+            "status": 500,
+            "body": "Incorrect email or password"
+        },
+        "6": {
+            "status": 500,
+            "body": "There are too many password errors, please try again after 60 minutes."
+        },
+        "7": {
+            "status": 500,
+            "body": "There are too many password errors, please try again after 60 minutes."
+        },
+        "8": {
+            "status": 500,
+            "body": "There are too many password errors, please try again after 60 minutes."
+        },
+        "9": {
+            "status": 500,
+            "body": "There are too many password errors, please try again after 60 minutes."
+        },
+        "10": {
+            "status": 500,
+            "body": "There are too many password errors, please try again after 60 minutes."
+        }
+    },
+    "C_parallel_8": "skipped: worker processes require P1_DB_DRIVER=mysql"
+}

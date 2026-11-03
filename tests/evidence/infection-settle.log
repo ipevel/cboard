@@ -1,0 +1,1710 @@
+Note: Pass `--log-verbosity=all` to log information about killed and errored mutants.
+Note: Pass `--debug` to log test-framework output.
+
+Escaped mutants:
+================
+
+1) /app/app/Services/PaymentSettlementService.php:18    [M] MethodCallRemoval [ID] 401c45250c294f2149551f0c4fd9c0e7
+
+@@ @@
+     public $order;
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+-        PaymentLedgerSchema::requireInstalled();
++        
+         if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
+             return false;
+         }
+
+
+2) /app/app/Services/PaymentSettlementService.php:19    [M] GreaterThan [ID] 39e29351a5dd21a524117e502f6b4ff1
+
+@@ @@
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+         PaymentLedgerSchema::requireInstalled();
+-        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
++        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) >= 191) {
+             return false;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+
+
+3) /app/app/Services/PaymentSettlementService.php:19    [M] FalseValue [ID] f3ee366780045145b70a47d426b12295
+
+@@ @@
+     {
+         PaymentLedgerSchema::requireInstalled();
+         if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
+-            return false;
++            return true;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+
+
+4) /app/app/Services/PaymentSettlementService.php:19    [M] LogicalOr [ID] 489786e6b2201a74c1eebf5dc5365911
+
+@@ @@
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+         PaymentLedgerSchema::requireInstalled();
+-        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
++        if (!is_string($callbackNo) && $callbackNo === '' || strlen($callbackNo) > 191) {
+             return false;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+
+
+5) /app/app/Services/PaymentSettlementService.php:19    [M] LogicalOr [ID] db21fcbc6f33c7d56019b51dacd81d63
+
+@@ @@
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+         PaymentLedgerSchema::requireInstalled();
+-        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
++        if ((!is_string($callbackNo) || $callbackNo === '') && strlen($callbackNo) > 191) {
+             return false;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+
+
+6) /app/app/Services/PaymentSettlementService.php:19    [M] ReturnRemoval [ID] 2ac71c5749e15e06a514136c288db0bf
+
+@@ @@
+     {
+         PaymentLedgerSchema::requireInstalled();
+         if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
+-            return false;
++            
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+
+
+7) /app/app/Services/PaymentSettlementService.php:22    [M] IncrementInteger [ID] f3f82853a3c75e989ed90327df988795
+
+@@ @@
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+-            $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
++            $gateway = Payment::where('id', $payment['payment_id'] ?? 1)->lockForUpdate()->first();
+             if (!$gateway) {
+                 return false;
+             }
+
+
+8) /app/app/Services/PaymentSettlementService.php:22    [M] DecrementInteger [ID] 95d7faa893da3fd2f992ba1b04c73401
+
+@@ @@
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+-            $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
++            $gateway = Payment::where('id', $payment['payment_id'] ?? -1)->lockForUpdate()->first();
+             if (!$gateway) {
+                 return false;
+             }
+
+
+9) /app/app/Services/PaymentSettlementService.php:23    [M] FalseValue [ID] 591f38d6e262f5a75995b5a782692a8e
+
+@@ @@
+             // The channel lock serializes claims for one gateway receipt across all owners.
+             $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
+             if (!$gateway) {
+-                return false;
++                return true;
+             }
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+
+
+10) /app/app/Services/PaymentSettlementService.php:23    [M] ReturnRemoval [ID] fc076e9ff54638b99cd2caf1f8b5fec7
+
+@@ @@
+             // The channel lock serializes claims for one gateway receipt across all owners.
+             $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
+             if (!$gateway) {
+-                return false;
++                
+             }
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+
+
+11) /app/app/Services/PaymentSettlementService.php:27    [M] CastInt [ID] 146621203944e0604fca0294c2d9cab7
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if (!$user || !$order || $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+12) /app/app/Services/PaymentSettlementService.php:27    [M] CastInt [ID] facd54133713e83704132379eb3e1430
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if (!$user || !$order || (int) $order->user_id !== $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+13) /app/app/Services/PaymentSettlementService.php:27    [M] LogicalOr [ID] 848c977b9016f2e8fa464babc06fbfb6
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if (!$user && !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+14) /app/app/Services/PaymentSettlementService.php:27    [M] LogicalOr [ID] 5d37ca5d5f517da31c57d3d035f48c64
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if ((!$user || !$order) && (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+15) /app/app/Services/PaymentSettlementService.php:27    [M] LogicalOr [ID] 479c7d45ca7ad2fa5eb3717e08e23d45
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if ((!$user || !$order || (int) $order->user_id !== (int) $user->id) && !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+16) /app/app/Services/PaymentSettlementService.php:27    [M] FalseValue [ID] 2aaac307d5c47151469d7b8a4165c523
+
+@@ @@
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+             if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+-                return false;
++                return true;
+             }
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+
+
+17) /app/app/Services/PaymentSettlementService.php:27    [M] ReturnRemoval [ID] 84e507d271bb85fa4167e9ec8030adfc
+
+@@ @@
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+             if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+-                return false;
++                
+             }
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+
+
+18) /app/app/Services/PaymentSettlementService.php:31    [M] CastInt [ID] 1c34fd99843da79def35e8070c4b387c
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+19) /app/app/Services/PaymentSettlementService.php:31    [M] CastInt [ID] bd9dec3167bde3aec0a5801b36eb2efb
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+20) /app/app/Services/PaymentSettlementService.php:31    [M] LogicalOr [ID] 0af121c174864a74e39d201720056f97
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt && (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+21) /app/app/Services/PaymentSettlementService.php:31    [M] CastInt [ID] 5ef794507cd025e243c0252f3591612f
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+22) /app/app/Services/PaymentSettlementService.php:31    [M] CastInt [ID] 84f760aab5fcdc014c426f1de905c374
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+23) /app/app/Services/PaymentSettlementService.php:31    [M] LogicalOr [ID] c450237c56be71e3fe8e99d9319f9104
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if ((!$attempt || (int) $attempt->order_id !== (int) $order->id) && (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+24) /app/app/Services/PaymentSettlementService.php:31    [M] LogicalOr [ID] 2c8239d15cdbfd26f82624ccb198a95c
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if ((!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id) && (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+25) /app/app/Services/PaymentSettlementService.php:31    [M] LogicalOr [ID] 5e719619770fc45aabd25d4e8c0167fb
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if ((!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id) && ($attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id)) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+26) /app/app/Services/PaymentSettlementService.php:32    [M] CastInt [ID] 0a5796912c18fec5e6671eba42e76c8c
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+27) /app/app/Services/PaymentSettlementService.php:32    [M] CastInt [ID] 5744a00fc21d73224ec021130b7a209a
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+28) /app/app/Services/PaymentSettlementService.php:33    [M] DecrementInteger [ID] 62ad92a723698afa556afd6bc563c6d9
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? -1) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+29) /app/app/Services/PaymentSettlementService.php:33    [M] IncrementInteger [ID] 164fbe99ab3920ab58cd659608029250
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 1) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+30) /app/app/Services/PaymentSettlementService.php:33    [M] NotIdentical [ID] c83ff009faa5a39952462590138b87dc
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method === $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+31) /app/app/Services/PaymentSettlementService.php:33    [M] CastInt [ID] 057d2460e707beaff8a996dddd3773a4
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+32) /app/app/Services/PaymentSettlementService.php:33    [M] CastInt [ID] 6f316a3a717c4682341a4a269cfa63e6
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+33) /app/app/Services/PaymentSettlementService.php:33    [M] Coalesce [ID] 047b80e522885d27017c6d3bbfb93019
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) (0 ?? $payment['verified_attempt_id']) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+34) /app/app/Services/PaymentSettlementService.php:33    [M] NotIdentical [ID] a37333b8b1d67847dfa2ce563e5968b5
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) === (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+35) /app/app/Services/PaymentSettlementService.php:33    [M] LogicalAnd [ID] ad82b80be10b9cc532c31d6387766554
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || ($attempt->method !== $gateway->payment || (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id)) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+36) /app/app/Services/PaymentSettlementService.php:33    [M] FalseValue [ID] 3f6b1d9f94ef9df14a4e7bae3cbb89f5
+
+@@ @@
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+-                    return false;
++                    return true;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+
+
+37) /app/app/Services/PaymentSettlementService.php:33    [M] ReturnRemoval [ID] 8352a8550b60a25d7aa793e3f296e7eb
+
+@@ @@
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+-                    return false;
++                    
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+
+
+38) /app/app/Services/PaymentSettlementService.php:34    [M] CastInt [ID] 272d8ebbde62df6102996c25f502d387
+
+@@ @@
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+-            } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
++            } elseif (!$gateway->enable || (int) $order->payment_id !== $gateway->id) {
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+
+
+39) /app/app/Services/PaymentSettlementService.php:34    [M] CastInt [ID] db8a23f51146a01fe040ee0e0660711b
+
+@@ @@
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+-            } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
++            } elseif (!$gateway->enable || $order->payment_id !== (int) $gateway->id) {
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+
+
+40) /app/app/Services/PaymentSettlementService.php:34    [M] LogicalNot [ID] c766b8c8897c655998dc2341fe5169fd
+
+@@ @@
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+-            } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
++            } elseif ($gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+
+
+41) /app/app/Services/PaymentSettlementService.php:34    [M] NotIdentical [ID] ba9fb310778a7548a8a5c9a22f47b8a3
+
+@@ @@
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+-            } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
++            } elseif (!$gateway->enable || (int) $order->payment_id === (int) $gateway->id) {
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+
+
+42) /app/app/Services/PaymentSettlementService.php:34    [M] LogicalOr [ID] ac4be5eb392385a7ef97b6feabeffa33
+
+@@ @@
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+-            } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
++            } elseif (!$gateway->enable && (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+
+
+43) /app/app/Services/PaymentSettlementService.php:34    [M] LogicalOrNegation [ID] 5b664f889dc238f70bb7d9b535d9d94b
+
+@@ @@
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+-            } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
++            } elseif (!(!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id)) {
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+
+
+44) /app/app/Services/PaymentSettlementService.php:34    [M] FalseValue [ID] 27d1d8e2761557ba8dce8a3212e8bd87
+
+@@ @@
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+-                return false;
++                return true;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+             if ($gross <= 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
+
+
+45) /app/app/Services/PaymentSettlementService.php:34    [M] LogicalOrAllSubExprNegation [ID] 88a4b7695213cb311539a63f47fdd223
+
+@@ @@
+                 if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+-            } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
++            } elseif ($gateway->enable || !((int) $order->payment_id !== (int) $gateway->id)) {
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+
+
+46) /app/app/Services/PaymentSettlementService.php:34    [M] ReturnRemoval [ID] 2168472bdc7aa230ee2e4732aa7895d3
+
+@@ @@
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+-                return false;
++                
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+             if ($gross <= 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
+
+
+47) /app/app/Services/PaymentSettlementService.php:35    [M] CastInt [ID] 40429e32efa89e8b02abe40b69aae764
+
+@@ @@
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+             }
+-            $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
++            $gross = $attempt ? $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+             if ($gross <= 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
+                 return false;
+             }
+
+
+48) /app/app/Services/PaymentSettlementService.php:35    [M] CastInt [ID] 5887a97cb89d756fb0966890aff7b787
+
+@@ @@
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+             }
+-            $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
++            $gross = $attempt ? (int) $attempt->total_amount : $order->total_amount + (int) $order->handling_amount;
+             if ($gross <= 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
+                 return false;
+             }
+
+
+49) /app/app/Services/PaymentSettlementService.php:35    [M] CastInt [ID] 3deb52923cd00ac1bea49c8c244622ab
+
+@@ @@
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+             }
+-            $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
++            $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + $order->handling_amount;
+             if ($gross <= 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
+                 return false;
+             }
+
+
+50) /app/app/Services/PaymentSettlementService.php:35    [M] Plus [ID] 8640b12eaef5859c3f187027f5d39dc4
+
+@@ @@
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+                 return false;
+             }
+-            $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
++            $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount - (int) $order->handling_amount;
+             if ($gross <= 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
+                 return false;
+             }
+
+
+51) /app/app/Services/PaymentSettlementService.php:36    [M] LessThanOrEqualTo [ID] bbb4507729138b33f289eab42c9e93ab
+
+@@ @@
+                 return false;
+             }
+             $gross = $attempt ? (int) $attempt->total_amount : (int) $order->total_amount + (int) $order->handling_amount;
+-            if ($gross <= 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
++            if ($gross < 0 || !$this->amountMatches($payment, $attempt, $gateway, $gross)) {
+                 return false;
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+
+
+52) /app/app/Services/PaymentSettlementService.php:38    [M] CastInt [ID] dcfa40b39fc9361d32c7c34e9eea6a8c
+
+@@ @@
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+             if ($receipt) {
+-                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
++                return $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+
+
+53) /app/app/Services/PaymentSettlementService.php:38    [M] CastInt [ID] b06519fc6e32f629e018b398b10fe666
+
+@@ @@
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+             if ($receipt) {
+-                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
++                return (int) $receipt->order_id === $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+
+
+54) /app/app/Services/PaymentSettlementService.php:38    [M] LogicalAnd [ID] c8a5c66750cfbcc43632b8975ca85bde
+
+@@ @@
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+             if ($receipt) {
+-                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
++                return (int) $receipt->order_id === (int) $order->id || (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+
+
+55) /app/app/Services/PaymentSettlementService.php:39    [M] CastInt [ID] 2e33b970592f62c5ede01fb3c6789f9e
+
+@@ @@
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+             if ($receipt) {
+-                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
++                return (int) $receipt->order_id === (int) $order->id && (!$attempt || $receipt->attempt_id === (int) $attempt->id);
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+
+
+56) /app/app/Services/PaymentSettlementService.php:39    [M] LogicalNot [ID] 00bb6a2bd599a22e13b4d7bd0a57d214
+
+@@ @@
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+             if ($receipt) {
+-                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
++                return (int) $receipt->order_id === (int) $order->id && ($attempt || (int) $receipt->attempt_id === (int) $attempt->id);
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+
+
+57) /app/app/Services/PaymentSettlementService.php:39    [M] CastInt [ID] 3e7b49dc9aee42fc02318356b3e51ba8
+
+@@ @@
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+             if ($receipt) {
+-                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
++                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === $attempt->id);
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+
+
+58) /app/app/Services/PaymentSettlementService.php:39    [M] LogicalOrAllSubExprNegation [ID] f0b0ef3875b0975279ea41cfffeed0d8
+
+@@ @@
+             }
+             $receipt = DB::table('v2_payment_receipt')->where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->lockForUpdate()->first();
+             if ($receipt) {
+-                return (int) $receipt->order_id === (int) $order->id && (!$attempt || (int) $receipt->attempt_id === (int) $attempt->id);
++                return (int) $receipt->order_id === (int) $order->id && ($attempt || !((int) $receipt->attempt_id === (int) $attempt->id));
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+
+
+59) /app/app/Services/PaymentSettlementService.php:41    [M] FalseValue [ID] 148d79cb3c3c533acfe78d9397a70902
+
+@@ @@
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+-                return false;
++                return true;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+
+
+60) /app/app/Services/PaymentSettlementService.php:41    [M] ReturnRemoval [ID] 8167c0ea2a374e109c60a32a0cffb527
+
+@@ @@
+             }
+             $claimed = Order::where('payment_id', $gateway->id)->where('callback_no', $callbackNo)->where('id', '!=', $order->id)->lockForUpdate()->first();
+             if ($claimed) {
+-                return false;
++                
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+
+
+61) /app/app/Services/PaymentSettlementService.php:42    [M] DecrementInteger [ID] e9560ab97ca4de26cb76cc1f169bf4f2
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [0, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+62) /app/app/Services/PaymentSettlementService.php:42    [M] CastInt [ID] fefad8cf81e4651f8c69642bd7450594
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array($order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+63) /app/app/Services/PaymentSettlementService.php:42    [M] DecrementInteger [ID] 13ccccbf6b64b0187089659ce8703b9a
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [1, 2, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+64) /app/app/Services/PaymentSettlementService.php:42    [M] IncrementInteger [ID] 7a1914645c80a824f943c6b5b9bae039
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [2, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+65) /app/app/Services/PaymentSettlementService.php:42    [M] IncrementInteger [ID] 07f6611982b2a76929aff73723375635
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [1, 4, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+66) /app/app/Services/PaymentSettlementService.php:42    [M] DecrementInteger [ID] 17c16fdfa6d216a164003c7949c151d5
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [1, 3, 3], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+67) /app/app/Services/PaymentSettlementService.php:42    [M] LogicalAnd [ID] 79631146595342d7f8d57d603f9670c8
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [1, 3, 4], true) || $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+68) /app/app/Services/PaymentSettlementService.php:42    [M] Identical [ID] 113429d58d27d9f8cf4b421cce9900f5
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no !== 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+69) /app/app/Services/PaymentSettlementService.php:42    [M] IncrementInteger [ID] 1a856354eeaff424a661032a90635dbc
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = in_array((int) $order->status, [1, 3, 5], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+70) /app/app/Services/PaymentSettlementService.php:42    [M] LogicalAndSingleSubExprNegation [ID] ff665e1a7d752b1bf79802899fa1e5a8
+
+@@ @@
+             if ($claimed) {
+                 return false;
+             }
+-            $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
++            $manual = !in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+
+
+71) /app/app/Services/PaymentSettlementService.php:43    [M] IncrementInteger [ID] fb9439b83ab4ad35ce27b5d5017b190b
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [2, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+72) /app/app/Services/PaymentSettlementService.php:43    [M] CastInt [ID] 3facddc1afeca4d51a96018ffbfbd702
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array($order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+73) /app/app/Services/PaymentSettlementService.php:43    [M] DecrementInteger [ID] bbd54a79843a968b82275f5944624075
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [0, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+74) /app/app/Services/PaymentSettlementService.php:43    [M] DecrementInteger [ID] 7c86dff2555d45dab110da83d1318c70
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 2, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+75) /app/app/Services/PaymentSettlementService.php:43    [M] IncrementInteger [ID] 22d6cf9b43de365b64837da8acf3491e
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 5], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+76) /app/app/Services/PaymentSettlementService.php:43    [M] DecrementInteger [ID] f032addb9a01fbf5602e542c571c9f2a
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 3], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+77) /app/app/Services/PaymentSettlementService.php:43    [M] IncrementInteger [ID] 4876cb596e94101e6cc228409a84e46e
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 4, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+78) /app/app/Services/PaymentSettlementService.php:43    [M] LogicalAnd [ID] 79bdc562a600db29453fa96c3c67197f
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || (in_array((int) $order->status, [1, 3, 4], true) || (int) $order->payment_id === (int) $gateway->id) && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+79) /app/app/Services/PaymentSettlementService.php:43    [M] LogicalAndAllSubExprNegation [ID] aada43b9a46e887ecbf25991d5d552ec
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || !in_array((int) $order->status, [1, 3, 4], true) && !((int) $order->payment_id === (int) $gateway->id) && !((string) $order->callback_no === $callbackNo);
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+80) /app/app/Services/PaymentSettlementService.php:43    [M] LogicalAnd [ID] 331748aa0d249a0beb6940e80cf86996
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || (in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id || (string) $order->callback_no === $callbackNo);
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+81) /app/app/Services/PaymentSettlementService.php:43    [M] LogicalOr [ID] 0fc933a8832a5901500c24c69ae11048
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual && (in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo);
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+82) /app/app/Services/PaymentSettlementService.php:43    [M] LogicalAndSingleSubExprNegation [ID] f45a9b90dd384d67695be5115103a94b
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || !in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+83) /app/app/Services/PaymentSettlementService.php:44    [M] CastInt [ID] cb4824466a24060fcf79c9bf6e6f85c0
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+84) /app/app/Services/PaymentSettlementService.php:44    [M] Identical [ID] 6650f67b3b4747b55f1b92b3560e7853
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id !== (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+85) /app/app/Services/PaymentSettlementService.php:44    [M] CastInt [ID] 43d250bca1deb9153bd935216605db77
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+86) /app/app/Services/PaymentSettlementService.php:44    [M] CastString [ID] 31349eb64b1d5de5bf5fba8ee09a516d
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+87) /app/app/Services/PaymentSettlementService.php:44    [M] Identical [ID] a372c81cd4b748e79ac762bcb59ba0dd
+
+@@ @@
+                 return false;
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+-            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
++            $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no !== $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+
+
+88) /app/app/Services/PaymentSettlementService.php:45    [M] CastInt [ID] 358f2ff96b54e05427b5e345625ff352
+
+@@ @@
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+-            $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
++            $apply = $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+                 return false;
+
+
+89) /app/app/Services/PaymentSettlementService.php:45    [M] CastInt [ID] 05c8ffb8034c7d965954fdf11f454b7a
+
+@@ @@
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+-            $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
++            $apply = (int) $order->status === 0 && (!$attempt || $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+                 return false;
+
+
+90) /app/app/Services/PaymentSettlementService.php:45    [M] LogicalNot [ID] b5201476e148d927592ba4ff4423fc81
+
+@@ @@
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+-            $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
++            $apply = (int) $order->status === 0 && ($attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+                 return false;
+
+
+91) /app/app/Services/PaymentSettlementService.php:45    [M] CastInt [ID] 92c0766edd5aebab49662f320198f58b
+
+@@ @@
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+-            $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
++            $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+                 return false;
+
+
+92) /app/app/Services/PaymentSettlementService.php:45    [M] LogicalOrAllSubExprNegation [ID] 907fccdb96aec30343a3b0afbea674e9
+
+@@ @@
+             }
+             $manual = in_array((int) $order->status, [1, 3, 4], true) && $order->callback_no === 'manual_operation';
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+-            $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
++            $apply = (int) $order->status === 0 && ($attempt || !((int) $attempt->base_amount === (int) $order->total_amount));
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+                 return false;
+
+
+93) /app/app/Services/PaymentSettlementService.php:47    [M] CastInt [ID] 9e7275ec86a0bbcad36616de5e83b591
+
+@@ @@
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+-            if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
++            if (!in_array($order->status, [0, 1, 2, 3, 4], true)) {
+                 return false;
+             }
+             if ($wallet) {
+
+
+94) /app/app/Services/PaymentSettlementService.php:47    [M] DecrementInteger [ID] cfb5c3b4a6735f54ba578fc1074e1670
+
+@@ @@
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+-            if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
++            if (!in_array((int) $order->status, [0, 0, 2, 3, 4], true)) {
+                 return false;
+             }
+             if ($wallet) {
+
+
+95) /app/app/Services/PaymentSettlementService.php:47    [M] IncrementInteger [ID] 3f1521b2db593835a12798e1a7d532bc
+
+@@ @@
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+-            if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
++            if (!in_array((int) $order->status, [0, 2, 2, 3, 4], true)) {
+                 return false;
+             }
+             if ($wallet) {
+
+
+96) /app/app/Services/PaymentSettlementService.php:47    [M] IncrementInteger [ID] c7294436c164a0582fa087276585e7f1
+
+@@ @@
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+-            if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
++            if (!in_array((int) $order->status, [0, 1, 2, 4, 4], true)) {
+                 return false;
+             }
+             if ($wallet) {
+
+
+97) /app/app/Services/PaymentSettlementService.php:47    [M] DecrementInteger [ID] 25986ab2557b1253d6fa402deb649fd3
+
+@@ @@
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+-            if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
++            if (!in_array((int) $order->status, [0, 1, 2, 3, 3], true)) {
+                 return false;
+             }
+             if ($wallet) {
+
+
+98) /app/app/Services/PaymentSettlementService.php:47    [M] DecrementInteger [ID] 2dedf97e906c5f746829b8cd121b1e28
+
+@@ @@
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+-            if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
++            if (!in_array((int) $order->status, [0, 1, 2, 2, 4], true)) {
+                 return false;
+             }
+             if ($wallet) {
+
+
+99) /app/app/Services/PaymentSettlementService.php:47    [M] IncrementInteger [ID] ad11ac0f6af96a6a81751c8d23643eeb
+
+@@ @@
+             $alreadyApplied = $manual || in_array((int) $order->status, [1, 3, 4], true) && (int) $order->payment_id === (int) $gateway->id && (string) $order->callback_no === $callbackNo;
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+-            if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
++            if (!in_array((int) $order->status, [0, 1, 2, 3, 5], true)) {
+                 return false;
+             }
+             if ($wallet) {
+
+
+100) /app/app/Services/PaymentSettlementService.php:47    [M] FalseValue [ID] 478497817edda4ce142980693a6e8ce6
+
+@@ @@
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+-                return false;
++                return true;
+             }
+             if ($wallet) {
+                 // Refund the entire CNY checkout quote, including handling fee, without reopening
+
+
+101) /app/app/Services/PaymentSettlementService.php:47    [M] ReturnRemoval [ID] c3e0804a37a311750065a61bd3cacc07
+
+@@ @@
+             $apply = (int) $order->status === 0 && (!$attempt || (int) $attempt->base_amount === (int) $order->total_amount);
+             $wallet = !$apply && !$alreadyApplied;
+             if (!in_array((int) $order->status, [0, 1, 2, 3, 4], true)) {
+-                return false;
++                
+             }
+             if ($wallet) {
+                 // Refund the entire CNY checkout quote, including handling fee, without reopening
+
+
+102) /app/app/Services/PaymentSettlementService.php:52    [M] Throw_ [ID] 8387c15321cde3469e7b40f33c50340f
+
+@@ @@
+                 // a canceled purchase or reusing its already-returned balance/coupon reservation.
+                 $user->balance += $gross;
+                 if (!$user->save()) {
+-                    throw new \RuntimeException('收款转入余额失败');
++                    new \RuntimeException('收款转入余额失败');
+                 }
+             } elseif ($manual) {
+                 $order->callback_no = $callbackNo;
+
+
+103) /app/app/Services/PaymentSettlementService.php:61    [M] Throw_ [ID] 444d3699655343a70ec1274def5a2748
+
+@@ @@
+                 $order->paid_at = time();
+                 $order->callback_no = $callbackNo;
+                 if (!$order->save()) {
+-                    throw new \RuntimeException('支付状态保存失败');
++                    new \RuntimeException('支付状态保存失败');
+                 }
+                 DB::afterCommit(function () use ($order) {
+                     try {
+
+
+104) /app/app/Services/PaymentSettlementService.php:64    [M] ArrayItem [ID] 2bbe11e203e0d1f36568670380b1941d
+
+@@ @@
+                     try {
+                         OrderHandleJob::dispatch($order->trade_no);
+                     } catch (\Throwable $error) {
+-                        Log::error('订单任务派发失败', ['trade_no' => $order->trade_no, 'exception' => $error]);
++                        Log::error('订单任务派发失败', ['trade_no' > $order->trade_no, 'exception' => $error]);
+                     }
+                 });
+             }
+
+
+105) /app/app/Services/PaymentSettlementService.php:64    [M] ArrayItemRemoval [ID] ab6700f69387141ff0ff570a35d30907
+
+@@ @@
+                     try {
+                         OrderHandleJob::dispatch($order->trade_no);
+                     } catch (\Throwable $error) {
+-                        Log::error('订单任务派发失败', ['trade_no' => $order->trade_no, 'exception' => $error]);
++                        Log::error('订单任务派发失败', ['exception' => $error]);
+                     }
+                 });
+             }
+
+
+106) /app/app/Services/PaymentSettlementService.php:64    [M] MethodCallRemoval [ID] ae8be50a2a7fcc141db20ebe5d654223
+
+@@ @@
+                     try {
+                         OrderHandleJob::dispatch($order->trade_no);
+                     } catch (\Throwable $error) {
+-                        Log::error('订单任务派发失败', ['trade_no' => $order->trade_no, 'exception' => $error]);
++                        
+                     }
+                 });
+             }
+
+
+107) /app/app/Services/PaymentSettlementService.php:67    [M] CastInt [ID] 53250fd8c9c3ac86aa83621065cae3ec
+
+@@ @@
+                     }
+                 });
+             }
+-            $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'order_changed' : 'additional_payment') : null;
++            $reason = $wallet ? $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'order_changed' : 'additional_payment') : null;
+             DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : 0, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
+             if ($attempt) {
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+
+
+108) /app/app/Services/PaymentSettlementService.php:67    [M] CastInt [ID] 36457cf7e1e78341af8b4b6bc49effe3
+
+@@ @@
+                     }
+                 });
+             }
+-            $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'order_changed' : 'additional_payment') : null;
++            $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ($order->status === 0 ? 'order_changed' : 'additional_payment') : null;
+             DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : 0, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
+             if ($attempt) {
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+
+
+109) /app/app/Services/PaymentSettlementService.php:67    [M] Ternary [ID] 7738d1458e09779a6ab8cdd420eff88b
+
+@@ @@
+                     }
+                 });
+             }
+-            $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'order_changed' : 'additional_payment') : null;
++            $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'additional_payment' : 'order_changed') : null;
+             DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : 0, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
+             if ($attempt) {
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+
+
+110) /app/app/Services/PaymentSettlementService.php:67    [M] DecrementInteger [ID] d79ddeabc3f30824d32f469cbf50dc9a
+
+@@ @@
+                     }
+                 });
+             }
+-            $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'order_changed' : 'additional_payment') : null;
++            $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === -1 ? 'order_changed' : 'additional_payment') : null;
+             DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : 0, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
+             if ($attempt) {
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+
+
+111) /app/app/Services/PaymentSettlementService.php:70    [M] DecrementInteger [ID] 3336e38edabd7452e8e53cf13a878a6f
+
+@@ @@
+                 });
+             }
+             $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'order_changed' : 'additional_payment') : null;
+-            DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : 0, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
++            DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : -1, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
+             if ($attempt) {
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+             }
+
+
+112) /app/app/Services/PaymentSettlementService.php:70    [M] IncrementInteger [ID] 9be34d65b32f47eca464747eb7b11d34
+
+@@ @@
+                 });
+             }
+             $reason = $wallet ? (int) $order->status === 2 ? 'canceled_order' : ((int) $order->status === 0 ? 'order_changed' : 'additional_payment') : null;
+-            DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : 0, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
++            DB::table('v2_payment_receipt')->insert(['attempt_id' => $attempt ? $attempt->id : null, 'order_id' => $order->id, 'user_id' => $user->id, 'payment_id' => $gateway->id, 'callback_no' => $callbackNo, 'amount' => $gross, 'wallet_amount' => $wallet ? $gross : 1, 'disposition' => $wallet ? 'wallet' : 'applied', 'reason' => $reason, 'created_at' => time()]);
+             if ($attempt) {
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+             }
+
+
+113) /app/app/Services/PaymentSettlementService.php:73    [M] DecrementInteger [ID] fab8b4e542a643800b44a0412250041c
+
+@@ @@
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+             }
+             return true;
+-        }, 3);
++        }, 2);
+     }
+     private function amountMatches(array $payment, $attempt, Payment $gateway, $gross)
+     {
+
+
+114) /app/app/Services/PaymentSettlementService.php:73    [M] IncrementInteger [ID] e244993248123ac78f608506e89bd00c
+
+@@ @@
+                 DB::table(PaymentAttemptService::TABLE)->where('id', $attempt->id)->update(['status' => 'paid', 'updated_at' => time()]);
+             }
+             return true;
+-        }, 3);
++        }, 4);
+     }
+     private function amountMatches(array $payment, $attempt, Payment $gateway, $gross)
+     {
+
+
+115) /app/app/Services/PaymentSettlementService.php:81    [M] DecrementInteger [ID] ea96d70978a3a9e74d2f123405efd027
+
+@@ @@
+             return false;
+         }
+         if (array_key_exists('amount_minor', $payment)) {
+-            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
++            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+             $currency = $payment['currency'] ?? null;
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+
+
+116) /app/app/Services/PaymentSettlementService.php:81    [M] ArrayItemRemoval [ID] 947f36dff53f293ea85d2f839ba43583
+
+@@ @@
+             return false;
+         }
+         if (array_key_exists('amount_minor', $payment)) {
+-            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
++            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => []]);
+             $currency = $payment['currency'] ?? null;
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+
+
+117) /app/app/Services/PaymentSettlementService.php:81    [M] IncrementInteger [ID] e77284f0f1e5a53e3e2798c8309b66c4
+
+@@ @@
+             return false;
+         }
+         if (array_key_exists('amount_minor', $payment)) {
+-            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
++            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
+             $currency = $payment['currency'] ?? null;
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+
+
+118) /app/app/Services/PaymentSettlementService.php:81    [M] ArrayItemRemoval [ID] 2a41b7c6ecbcabe2d6172de800653d89
+
+@@ @@
+             return false;
+         }
+         if (array_key_exists('amount_minor', $payment)) {
+-            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
++            $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, []);
+             $currency = $payment['currency'] ?? null;
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+
+
+119) /app/app/Services/PaymentSettlementService.php:83    [M] LogicalOr [ID] fd64201cc2a13b770e0d8e53546d107e
+
+@@ @@
+         if (array_key_exists('amount_minor', $payment)) {
+             $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+             $currency = $payment['currency'] ?? null;
+-            if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
++            if ($amount === false && !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+             }
+             return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
+
+
+120) /app/app/Services/PaymentSettlementService.php:83    [M] LogicalOr [ID] 1face529f1d94f1d8eee81ad8a331f7a
+
+@@ @@
+         if (array_key_exists('amount_minor', $payment)) {
+             $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+             $currency = $payment['currency'] ?? null;
+-            if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
++            if (($amount === false || !is_string($currency)) && !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+             }
+             return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
+
+
+121) /app/app/Services/PaymentSettlementService.php:83    [M] FalseValue [ID] c000c3d8158a1a185d268ce003cf6029
+
+@@ @@
+             $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+             $currency = $payment['currency'] ?? null;
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+-                return false;
++                return true;
+             }
+             return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
+         }
+
+
+122) /app/app/Services/PaymentSettlementService.php:83    [M] ReturnRemoval [ID] 26d34b17d2d170afb28472537020902a
+
+@@ @@
+             $amount = filter_var($payment['amount_minor'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+             $currency = $payment['currency'] ?? null;
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+-                return false;
++                
+             }
+             return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
+         }
+
+
+123) /app/app/Services/PaymentSettlementService.php:84    [M] CastInt [ID] 2e740a699df3fc3c880415aae3be93cb
+
+@@ @@
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+             }
+-            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
++            return $attempt && $attempt->gateway_amount_minor !== null && $amount === $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
+         }
+         if (!array_key_exists('amount', $payment)) {
+             return !in_array($method, ['EPayQrcode', 'Paytaro'], true);
+
+
+124) /app/app/Services/PaymentSettlementService.php:84    [M] LogicalAnd [ID] 217c865d58fc974a6b5290ebec8ab458
+
+@@ @@
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+             }
+-            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
++            return ($attempt || $attempt->gateway_amount_minor !== null) && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
+         }
+         if (!array_key_exists('amount', $payment)) {
+             return !in_array($method, ['EPayQrcode', 'Paytaro'], true);
+
+
+125) /app/app/Services/PaymentSettlementService.php:85    [M] UnwrapStrToLower [ID] c236b19b97785dbbdc44520c620e8711
+
+@@ @@
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+             }
+-            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
++            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && $currency === strtolower((string) $attempt->gateway_currency);
+         }
+         if (!array_key_exists('amount', $payment)) {
+             return !in_array($method, ['EPayQrcode', 'Paytaro'], true);
+
+
+126) /app/app/Services/PaymentSettlementService.php:85    [M] UnwrapStrToLower [ID] 40ac3b4a96c36a6eb54dc89a37b5b068
+
+@@ @@
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+             }
+-            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
++            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === (string) $attempt->gateway_currency;
+         }
+         if (!array_key_exists('amount', $payment)) {
+             return !in_array($method, ['EPayQrcode', 'Paytaro'], true);
+
+
+127) /app/app/Services/PaymentSettlementService.php:85    [M] CastString [ID] 32d8bf9bf70adba9de8944bf587f4d17
+
+@@ @@
+             if ($amount === false || !is_string($currency) || !preg_match('/\A[a-zA-Z]{3}\z/', $currency)) {
+                 return false;
+             }
+-            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower((string) $attempt->gateway_currency);
++            return $attempt && $attempt->gateway_amount_minor !== null && $amount === (int) $attempt->gateway_amount_minor && strtolower($currency) === strtolower($attempt->gateway_currency);
+         }
+         if (!array_key_exists('amount', $payment)) {
+             return !in_array($method, ['EPayQrcode', 'Paytaro'], true);
+
+
+128) /app/app/Services/PaymentSettlementService.php:89    [M] LogicalAnd [ID] 84e2f1db0939ebc88c4ed7f05ad74e4c
+
+@@ @@
+         }
+         // Other legacy signature-only adapters.
+         $amount = Money::toCents($payment['amount']);
+-        return $amount !== null && $amount > 0 && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && strtoupper($payment['currency']) === strtoupper($payment['expected_currency']);
++        return ($amount !== null || $amount > 0) && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && strtoupper($payment['currency']) === strtoupper($payment['expected_currency']);
+     }
+ }
+
+
+129) /app/app/Services/PaymentSettlementService.php:89    [M] GreaterThan [ID] 29ac9155d671a61a8537d59a0de100ac
+
+@@ @@
+         }
+         // Other legacy signature-only adapters.
+         $amount = Money::toCents($payment['amount']);
+-        return $amount !== null && $amount > 0 && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && strtoupper($payment['currency']) === strtoupper($payment['expected_currency']);
++        return $amount !== null && $amount >= 0 && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && strtoupper($payment['currency']) === strtoupper($payment['expected_currency']);
+     }
+ }
+
+
+130) /app/app/Services/PaymentSettlementService.php:92    [M] UnwrapStrToUpper [ID] b8712d96d096324df9918f3200cce73d
+
+@@ @@
+         }
+         // Other legacy signature-only adapters.
+         $amount = Money::toCents($payment['amount']);
+-        return $amount !== null && $amount > 0 && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && strtoupper($payment['currency']) === strtoupper($payment['expected_currency']);
++        return $amount !== null && $amount > 0 && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && strtoupper($payment['currency']) === $payment['expected_currency'];
+     }
+ }
+
+
+131) /app/app/Services/PaymentSettlementService.php:92    [M] UnwrapStrToUpper [ID] 7a872ee6979764316fc923e95ab8755d
+
+@@ @@
+         }
+         // Other legacy signature-only adapters.
+         $amount = Money::toCents($payment['amount']);
+-        return $amount !== null && $amount > 0 && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && strtoupper($payment['currency']) === strtoupper($payment['expected_currency']);
++        return $amount !== null && $amount > 0 && $amount === $gross && is_string($payment['currency'] ?? null) && is_string($payment['expected_currency'] ?? null) && $payment['currency'] !== '' && $payment['expected_currency'] !== '' && $payment['currency'] === strtoupper($payment['expected_currency']);
+     }
+ }
+
+
+Timed Out mutants:
+==================
+
+Skipped mutants:
+================

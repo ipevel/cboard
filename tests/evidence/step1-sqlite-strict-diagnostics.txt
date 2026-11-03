@@ -1,0 +1,54 @@
+PHPUnit 9.6.38 by Sebastian Bergmann and contributors.
+
+....................
+Deprecated: strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in /app/app/Http/Controllers/V1/User/ServerController.php on line 31
+..
+Deprecated: strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in /app/app/Http/Controllers/V1/User/ServerController.php on line 31
+.............E..EEEEE.E.................... 65 / 76 ( 85%)
+.......S...                                                       76 / 76 (100%)
+
+Time: 00:04.197, Memory: 22.00 MB
+
+There were 7 errors:
+
+1) Tests\P1\StripeSettlementTest::testEveryStripeAdapterRejectsAnOrderTradeNoAndSettlesOnlyItsFrozenAttemptQuote
+PHPUnit\Framework\Exception: Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+Deprecated: Creation of dynamic property App\Payments\StripeCredit::$config is deprecated in /app/app/Payments/StripeCredit.php on line 14
+Deprecated: Creation of dynamic property App\Payments\StripeCredit::$config is deprecated in /app/app/Payments/StripeCredit.php on line 14
+Deprecated: Creation of dynamic property App\Payments\StripeCheckout::$config is deprecated in /app/app/Payments/StripeCheckout.php on line 12
+Deprecated: Creation of dynamic property App\Payments\StripeCheckout::$config is deprecated in /app/app/Payments/StripeCheckout.php on line 12
+Deprecated: Creation of dynamic property App\Payments\StripeAlipay::$config is deprecated in /app/app/Payments/StripeAlipay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeAlipay::$config is deprecated in /app/app/Payments/StripeAlipay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeWepay::$config is deprecated in /app/app/Payments/StripeWepay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeWepay::$config is deprecated in /app/app/Payments/StripeWepay.php on line 16
+
+2) Tests\P1\StripeSettlementTest::testEarlyStripeCallbackUsesFrozenAttemptAfterRotationAndCompleteKeepsPaid
+PHPUnit\Framework\Exception: Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+
+3) Tests\P1\StripeSettlementTest::testDuplicateSettlementAndJobsDoNotExtendSubscriptionTwice
+PHPUnit\Framework\Exception: Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+
+4) Tests\P1\StripeSettlementTest::testDispatchFailureKeepsPaymentAndCheckOrderRequeuesARealOpenJob
+PHPUnit\Framework\Exception: Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+
+5) Tests\P1\StripeSettlementTest::testFailedOpeningTransactionCanRetryWithoutPartialEntitlement
+PHPUnit\Framework\Exception: Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+
+6) Tests\P1\StripeSettlementTest::testTelegramQueueDispatchFailureDoesNotTurnPaidCallbackIntoFailure
+PHPUnit\Framework\Exception: Deprecated: Creation of dynamic property App\Payments\StripeALL::$config is deprecated in /app/app/Payments/StripeALL.php on line 11
+
+7) Tests\P1\StripeSettlementTest::testAlipayAndWepayValidateSourceBeforeChargeAndChargeFromLocalQuote
+PHPUnit\Framework\Exception: Deprecated: Creation of dynamic property App\Payments\StripeCredit::$config is deprecated in /app/app/Payments/StripeCredit.php on line 14
+Deprecated: Creation of dynamic property App\Payments\StripeAlipay::$config is deprecated in /app/app/Payments/StripeAlipay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeAlipay::$config is deprecated in /app/app/Payments/StripeAlipay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeAlipay::$config is deprecated in /app/app/Payments/StripeAlipay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeAlipay::$config is deprecated in /app/app/Payments/StripeAlipay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeWepay::$config is deprecated in /app/app/Payments/StripeWepay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeWepay::$config is deprecated in /app/app/Payments/StripeWepay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeWepay::$config is deprecated in /app/app/Payments/StripeWepay.php on line 16
+Deprecated: Creation of dynamic property App\Payments\StripeWepay::$config is deprecated in /app/app/Payments/StripeWepay.php on line 16
+
+ERRORS!
+Tests: 76, Assertions: 402, Errors: 7, Skipped: 1.

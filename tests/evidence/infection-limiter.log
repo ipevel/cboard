@@ -1,0 +1,428 @@
+Note: Pass `--log-verbosity=all` to log information about killed and errored mutants.
+Note: Pass `--debug` to log test-framework output.
+
+Escaped mutants:
+================
+
+1) /app/app/Services/PasswordLoginLimiter.php:16    [M] CastString [ID] 1f33c134c953bb70678a731bb8df4ec6
+
+@@ @@
+     public function throttle(Request $request): void
+     {
+         // Request::ip() honors only the proxies explicitly trusted by the deployment.
+-        foreach (['ip:' . hash('sha256', (string) $request->ip()) => 60, 'global' => 1200] as $scope => $maximum) {
++        foreach (['ip:' . hash('sha256', $request->ip()) => 60, 'global' => 1200] as $scope => $maximum) {
+             $key = 'PASSWORD_LOGIN_RATE_V1:' . $scope;
+             $this->locked($key, function () use ($key, $maximum) {
+                 $count = (int) Cache::get($key, 0);
+
+
+2) /app/app/Services/PasswordLoginLimiter.php:19    [M] DecrementInteger [ID] 9bdab6da91c0113220552ce1722e2e1a
+
+@@ @@
+         foreach (['ip:' . hash('sha256', (string) $request->ip()) => 60, 'global' => 1200] as $scope => $maximum) {
+             $key = 'PASSWORD_LOGIN_RATE_V1:' . $scope;
+             $this->locked($key, function () use ($key, $maximum) {
+-                $count = (int) Cache::get($key, 0);
++                $count = (int) Cache::get($key, -1);
+                 if ($count >= $maximum) {
+                     abort(429, __('Too many requests, please try again later.'));
+                 }
+
+
+3) /app/app/Services/PasswordLoginLimiter.php:19    [M] CastInt [ID] 0cbe489dcd0858f0b220ad1da2b4244e
+
+@@ @@
+         foreach (['ip:' . hash('sha256', (string) $request->ip()) => 60, 'global' => 1200] as $scope => $maximum) {
+             $key = 'PASSWORD_LOGIN_RATE_V1:' . $scope;
+             $this->locked($key, function () use ($key, $maximum) {
+-                $count = (int) Cache::get($key, 0);
++                $count = Cache::get($key, 0);
+                 if ($count >= $maximum) {
+                     abort(429, __('Too many requests, please try again later.'));
+                 }
+
+
+4) /app/app/Services/PasswordLoginLimiter.php:19    [M] IncrementInteger [ID] fd7d82f40d2e3888c2876462a29d6c5a
+
+@@ @@
+         foreach (['ip:' . hash('sha256', (string) $request->ip()) => 60, 'global' => 1200] as $scope => $maximum) {
+             $key = 'PASSWORD_LOGIN_RATE_V1:' . $scope;
+             $this->locked($key, function () use ($key, $maximum) {
+-                $count = (int) Cache::get($key, 0);
++                $count = (int) Cache::get($key, 1);
+                 if ($count >= $maximum) {
+                     abort(429, __('Too many requests, please try again later.'));
+                 }
+
+
+5) /app/app/Services/PasswordLoginLimiter.php:22    [M] IncrementInteger [ID] b11c27c7bf1db2c0999aa42318b27ffb
+
+@@ @@
+                 }
+                 // Fixed one-minute windows; concurrent requests cannot overwrite increments.
+                 if ($count === 0) {
+-                    Cache::put($key, 1, 60);
++                    Cache::put($key, 1, 61);
+                 } else {
+                     Cache::increment($key);
+                 }
+
+
+6) /app/app/Services/PasswordLoginLimiter.php:22    [M] DecrementInteger [ID] 9f5ffac9107443d5cdb20e2c2fa06500
+
+@@ @@
+                 }
+                 // Fixed one-minute windows; concurrent requests cannot overwrite increments.
+                 if ($count === 0) {
+-                    Cache::put($key, 1, 60);
++                    Cache::put($key, 1, 59);
+                 } else {
+                     Cache::increment($key);
+                 }
+
+
+7) /app/app/Services/PasswordLoginLimiter.php:33    [M] CastInt [ID] 89f7a467690e906c2b49a305eb13a1c4
+
+@@ @@
+         $verify = function () use ($user, $password) {
+             return $user && Helper::multiPasswordVerify($user->password_algo, $user->password_salt, $password, $user->password);
+         };
+-        if (!(int) config('v2board.password_limit_enable', 1)) {
++        if (!config('v2board.password_limit_enable', 1)) {
+             return $verify();
+         }
+         $identity = $user ? 'user:' . $user->id : 'email:' . hash('sha256', $email);
+
+
+8) /app/app/Services/PasswordLoginLimiter.php:33    [M] IncrementInteger [ID] ff7f83f56e8b099a5e2e5d3a36a83f09
+
+@@ @@
+         $verify = function () use ($user, $password) {
+             return $user && Helper::multiPasswordVerify($user->password_algo, $user->password_salt, $password, $user->password);
+         };
+-        if (!(int) config('v2board.password_limit_enable', 1)) {
++        if (!(int) config('v2board.password_limit_enable', 2)) {
+             return $verify();
+         }
+         $identity = $user ? 'user:' . $user->id : 'email:' . hash('sha256', $email);
+
+
+9) /app/app/Services/PasswordLoginLimiter.php:38    [M] CastInt [ID] 66d8194daa493ada524fcc70412b0c15
+
+@@ @@
+         $identity = $user ? 'user:' . $user->id : 'email:' . hash('sha256', $email);
+         $key = 'PASSWORD_LOGIN_ERRORS_V2:' . $identity;
+         return $this->locked($key, function () use ($key, $verify) {
+-            $count = (int) Cache::get($key, 0);
++            $count = Cache::get($key, 0);
+             if ($count >= (int) config('v2board.password_limit_count', 5)) {
+                 abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 60)]));
+             }
+
+
+10) /app/app/Services/PasswordLoginLimiter.php:39    [M] DecrementInteger [ID] c717235f9d914ff5310cb92689e73b59
+
+@@ @@
+         $key = 'PASSWORD_LOGIN_ERRORS_V2:' . $identity;
+         return $this->locked($key, function () use ($key, $verify) {
+             $count = (int) Cache::get($key, 0);
+-            if ($count >= (int) config('v2board.password_limit_count', 5)) {
++            if ($count >= (int) config('v2board.password_limit_count', 4)) {
+                 abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 60)]));
+             }
+             $valid = $verify();
+
+
+11) /app/app/Services/PasswordLoginLimiter.php:39    [M] CastInt [ID] 316a17d51a9cddab8c8dfd0f3517c81f
+
+@@ @@
+         $key = 'PASSWORD_LOGIN_ERRORS_V2:' . $identity;
+         return $this->locked($key, function () use ($key, $verify) {
+             $count = (int) Cache::get($key, 0);
+-            if ($count >= (int) config('v2board.password_limit_count', 5)) {
++            if ($count >= config('v2board.password_limit_count', 5)) {
+                 abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 60)]));
+             }
+             $valid = $verify();
+
+
+12) /app/app/Services/PasswordLoginLimiter.php:39    [M] IncrementInteger [ID] 0e7f31a3e93d990ccc3e30aed0453a1d
+
+@@ @@
+         $key = 'PASSWORD_LOGIN_ERRORS_V2:' . $identity;
+         return $this->locked($key, function () use ($key, $verify) {
+             $count = (int) Cache::get($key, 0);
+-            if ($count >= (int) config('v2board.password_limit_count', 5)) {
++            if ($count >= (int) config('v2board.password_limit_count', 6)) {
+                 abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 60)]));
+             }
+             $valid = $verify();
+
+
+13) /app/app/Services/PasswordLoginLimiter.php:40    [M] ArrayItemRemoval [ID] 2bf126364847db5feee3b71608cb8fce
+
+@@ @@
+         return $this->locked($key, function () use ($key, $verify) {
+             $count = (int) Cache::get($key, 0);
+             if ($count >= (int) config('v2board.password_limit_count', 5)) {
+-                abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 60)]));
++                abort(500, __('There are too many password errors, please try again after :minute minutes.', []));
+             }
+             $valid = $verify();
+             if ($valid) {
+
+
+14) /app/app/Services/PasswordLoginLimiter.php:41    [M] IncrementInteger [ID] cddc89d55892bf9683ccd0e7bc292baf
+
+@@ @@
+         return $this->locked($key, function () use ($key, $verify) {
+             $count = (int) Cache::get($key, 0);
+             if ($count >= (int) config('v2board.password_limit_count', 5)) {
+-                abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 60)]));
++                abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 61)]));
+             }
+             $valid = $verify();
+             if ($valid) {
+
+
+15) /app/app/Services/PasswordLoginLimiter.php:41    [M] DecrementInteger [ID] 59f924b707acd7414e215343829b457f
+
+@@ @@
+         return $this->locked($key, function () use ($key, $verify) {
+             $count = (int) Cache::get($key, 0);
+             if ($count >= (int) config('v2board.password_limit_count', 5)) {
+-                abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 60)]));
++                abort(500, __('There are too many password errors, please try again after :minute minutes.', ['minute' => config('v2board.password_limit_expire', 59)]));
+             }
+             $valid = $verify();
+             if ($valid) {
+
+
+16) /app/app/Services/PasswordLoginLimiter.php:46    [M] DecrementInteger [ID] 77e68dcb0e270262740385bc1910f5f9
+
+@@ @@
+             if ($valid) {
+                 Cache::forget($key);
+             } else {
+-                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 60));
++                Cache::put($key, $count + 1, 59 * (int) config('v2board.password_limit_expire', 60));
+             }
+             return $valid;
+         });
+
+
+17) /app/app/Services/PasswordLoginLimiter.php:46    [M] IncrementInteger [ID] a114e87f28804c25cd286525cad41d59
+
+@@ @@
+             if ($valid) {
+                 Cache::forget($key);
+             } else {
+-                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 60));
++                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 61));
+             }
+             return $valid;
+         });
+
+
+18) /app/app/Services/PasswordLoginLimiter.php:46    [M] IncrementInteger [ID] 6c28460fecb7675c8c352869d5a6d563
+
+@@ @@
+             if ($valid) {
+                 Cache::forget($key);
+             } else {
+-                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 60));
++                Cache::put($key, $count + 1, 61 * (int) config('v2board.password_limit_expire', 60));
+             }
+             return $valid;
+         });
+
+
+19) /app/app/Services/PasswordLoginLimiter.php:46    [M] CastInt [ID] 9f5ae7be725131d0161c1d5406a4cc39
+
+@@ @@
+             if ($valid) {
+                 Cache::forget($key);
+             } else {
+-                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 60));
++                Cache::put($key, $count + 1, 60 * config('v2board.password_limit_expire', 60));
+             }
+             return $valid;
+         });
+
+
+20) /app/app/Services/PasswordLoginLimiter.php:46    [M] DecrementInteger [ID] 663353f92355c6ccd323faca2ed45943
+
+@@ @@
+             if ($valid) {
+                 Cache::forget($key);
+             } else {
+-                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 60));
++                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 59));
+             }
+             return $valid;
+         });
+
+
+21) /app/app/Services/PasswordLoginLimiter.php:46    [M] Multiplication [ID] e43a566b903efa28db5fbd2c67366065
+
+@@ @@
+             if ($valid) {
+                 Cache::forget($key);
+             } else {
+-                Cache::put($key, $count + 1, 60 * (int) config('v2board.password_limit_expire', 60));
++                Cache::put($key, $count + 1, 60 / (int) config('v2board.password_limit_expire', 60));
+             }
+             return $valid;
+         });
+
+
+22) /app/app/Services/PasswordLoginLimiter.php:53    [M] ConcatOperandRemoval [ID] b4e9520ca23a13c7a21ae7716dee943b
+
+@@ @@
+     private function locked(string $key, callable $operation)
+     {
+         try {
+-            return Cache::lock($key . ':lock', 15)->block(3, $operation);
++            return Cache::lock(':lock', 15)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+             abort(429, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+23) /app/app/Services/PasswordLoginLimiter.php:53    [M] Concat [ID] 7c35d1d91228d4e948a08a98f3aba545
+
+@@ @@
+     private function locked(string $key, callable $operation)
+     {
+         try {
+-            return Cache::lock($key . ':lock', 15)->block(3, $operation);
++            return Cache::lock(':lock' . $key, 15)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+             abort(429, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+24) /app/app/Services/PasswordLoginLimiter.php:53    [M] ConcatOperandRemoval [ID] 2ce891b0a7b16a3dacce4b13861c1a1d
+
+@@ @@
+     private function locked(string $key, callable $operation)
+     {
+         try {
+-            return Cache::lock($key . ':lock', 15)->block(3, $operation);
++            return Cache::lock($key, 15)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+             abort(429, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+25) /app/app/Services/PasswordLoginLimiter.php:53    [M] DecrementInteger [ID] b71fc6afdced0fe562b3681434ea0734
+
+@@ @@
+     private function locked(string $key, callable $operation)
+     {
+         try {
+-            return Cache::lock($key . ':lock', 15)->block(3, $operation);
++            return Cache::lock($key . ':lock', 14)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+             abort(429, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+26) /app/app/Services/PasswordLoginLimiter.php:53    [M] DecrementInteger [ID] 716c2023d5a38b8450b9296b0b3e5c49
+
+@@ @@
+     private function locked(string $key, callable $operation)
+     {
+         try {
+-            return Cache::lock($key . ':lock', 15)->block(3, $operation);
++            return Cache::lock($key . ':lock', 15)->block(2, $operation);
+         } catch (LockTimeoutException $error) {
+             abort(429, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+27) /app/app/Services/PasswordLoginLimiter.php:53    [M] IncrementInteger [ID] 1b271536cb1398dc61dc25727863b0d7
+
+@@ @@
+     private function locked(string $key, callable $operation)
+     {
+         try {
+-            return Cache::lock($key . ':lock', 15)->block(3, $operation);
++            return Cache::lock($key . ':lock', 16)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+             abort(429, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+28) /app/app/Services/PasswordLoginLimiter.php:53    [M] IncrementInteger [ID] 9ba07f7d9b474bbcf5cc2b4bb0ea13b9
+
+@@ @@
+     private function locked(string $key, callable $operation)
+     {
+         try {
+-            return Cache::lock($key . ':lock', 15)->block(3, $operation);
++            return Cache::lock($key . ':lock', 15)->block(4, $operation);
+         } catch (LockTimeoutException $error) {
+             abort(429, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+29) /app/app/Services/PasswordLoginLimiter.php:54    [M] IncrementInteger [ID] a3d56ba9f556d50391b6b06908ef5565
+
+@@ @@
+         try {
+             return Cache::lock($key . ':lock', 15)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+-            abort(429, __('Too many requests, please try again later.'));
++            abort(430, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+30) /app/app/Services/PasswordLoginLimiter.php:54    [M] DecrementInteger [ID] 672a8962aa68f0e08a2fc418622e2877
+
+@@ @@
+         try {
+             return Cache::lock($key . ':lock', 15)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+-            abort(429, __('Too many requests, please try again later.'));
++            abort(428, __('Too many requests, please try again later.'));
+         }
+     }
+ }
+
+
+31) /app/app/Services/PasswordLoginLimiter.php:54    [M] FunctionCallRemoval [ID] 6e1ee068af77d9a006a5d99d678387fd
+
+@@ @@
+         try {
+             return Cache::lock($key . ':lock', 15)->block(3, $operation);
+         } catch (LockTimeoutException $error) {
+-            abort(429, __('Too many requests, please try again later.'));
++            
+         }
+     }
+ }
+
+
+Timed Out mutants:
+==================
+
+Skipped mutants:
+================

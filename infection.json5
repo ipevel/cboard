@@ -1,0 +1,20 @@
+{
+    "$schema": "https://raw.githubusercontent.com/infection/infection/master/resources/schema.json",
+    "source": {
+        "directories": [
+            "app/Services",
+            "app/Http/Controllers/V1/Passport"
+        ]
+    },
+    "timeout": 120,
+    "logs": {
+        "text": "tests/evidence/infection.log",
+        "summary": "tests/evidence/infection-summary.log",
+        "json": "tests/evidence/infection.json"
+    },
+    "phpUnit": {
+        "configDir": "."
+    },
+    "testFramework": "phpunit",
+    "bootstrap": "tests/P1/bootstrap.php"
+}

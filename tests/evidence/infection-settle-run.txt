@@ -1,0 +1,313 @@
+
+    ____      ____          __  _
+   /  _/___  / __/__  _____/ /_(_)___  ____
+   / // __ \/ /_/ _ \/ ___/ __/ / __ \/ __ \
+ _/ // / / / __/  __/ /__/ /_/ / /_/ / / / /
+/___/_/ /_/_/  \___/\___/\__/_/\____/_/ /_/
+
+#StandWithUkraine
+
+Infection - PHP Mutation Testing Framework version 0.31.9
+
+[notice] You are running Infection with PCOV enabled.
+
+Running initial test suite...
+
+PHPUnit version: 9.6.38
+
+.: killed by tests, A: killed by SA, M: escaped, U: uncovered
+E: fatal error, X: syntax error, T: timed out, S: skipped, I: ignored
+
+
+Generate mutants...
+
+Processing source code files...
+.....M.MMM.MM...MM...MMMMM..M.MM.MMMM.MMMMMMMMM.M.   (   50)
+M.M.MMMMMMMMMMMMM...MM.....M.M..MM...MM.M..MMMMMMM   (  100)
+MMMM..MMMMMMMMMMMMMMM.M.....MMMM..MM........MM....   (  150)
+M.MM.MM.M.M.M.M...M.M...M..M.MMM.M.M....M.....M.M.   (  200)
+.....M.......MM....M.....MM.MM.MM.MM......M..M....   (  250)
+.MM.M..MM.........M.M.
+Escaped mutants:
+================
+
+
+1) /app/app/Services/PaymentSettlementService.php:18    [M] MethodCallRemoval [ID] 401c45250c294f2149551f0c4fd9c0e7
+
+@@ @@
+     public $order;
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+-        PaymentLedgerSchema::requireInstalled();
++        
+         if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
+             return false;
+         }
+
+
+2) /app/app/Services/PaymentSettlementService.php:19    [M] GreaterThan [ID] 39e29351a5dd21a524117e502f6b4ff1
+
+@@ @@
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+         PaymentLedgerSchema::requireInstalled();
+-        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
++        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) >= 191) {
+             return false;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+
+
+3) /app/app/Services/PaymentSettlementService.php:19    [M] FalseValue [ID] f3ee366780045145b70a47d426b12295
+
+@@ @@
+     {
+         PaymentLedgerSchema::requireInstalled();
+         if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
+-            return false;
++            return true;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+
+
+4) /app/app/Services/PaymentSettlementService.php:19    [M] LogicalOr [ID] 489786e6b2201a74c1eebf5dc5365911
+
+@@ @@
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+         PaymentLedgerSchema::requireInstalled();
+-        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
++        if (!is_string($callbackNo) && $callbackNo === '' || strlen($callbackNo) > 191) {
+             return false;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+
+
+5) /app/app/Services/PaymentSettlementService.php:19    [M] LogicalOr [ID] db21fcbc6f33c7d56019b51dacd81d63
+
+@@ @@
+     public function settle(Order $source, $callbackNo, array $payment)
+     {
+         PaymentLedgerSchema::requireInstalled();
+-        if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
++        if ((!is_string($callbackNo) || $callbackNo === '') && strlen($callbackNo) > 191) {
+             return false;
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+
+
+6) /app/app/Services/PaymentSettlementService.php:19    [M] ReturnRemoval [ID] 2ac71c5749e15e06a514136c288db0bf
+
+@@ @@
+     {
+         PaymentLedgerSchema::requireInstalled();
+         if (!is_string($callbackNo) || $callbackNo === '' || strlen($callbackNo) > 191) {
+-            return false;
++            
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+
+
+7) /app/app/Services/PaymentSettlementService.php:22    [M] IncrementInteger [ID] f3f82853a3c75e989ed90327df988795
+
+@@ @@
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+-            $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
++            $gateway = Payment::where('id', $payment['payment_id'] ?? 1)->lockForUpdate()->first();
+             if (!$gateway) {
+                 return false;
+             }
+
+
+8) /app/app/Services/PaymentSettlementService.php:22    [M] DecrementInteger [ID] 95d7faa893da3fd2f992ba1b04c73401
+
+@@ @@
+         }
+         return DB::transaction(function () use ($source, $callbackNo, $payment) {
+             // The channel lock serializes claims for one gateway receipt across all owners.
+-            $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
++            $gateway = Payment::where('id', $payment['payment_id'] ?? -1)->lockForUpdate()->first();
+             if (!$gateway) {
+                 return false;
+             }
+
+
+9) /app/app/Services/PaymentSettlementService.php:23    [M] FalseValue [ID] 591f38d6e262f5a75995b5a782692a8e
+
+@@ @@
+             // The channel lock serializes claims for one gateway receipt across all owners.
+             $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
+             if (!$gateway) {
+-                return false;
++                return true;
+             }
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+
+
+10) /app/app/Services/PaymentSettlementService.php:23    [M] ReturnRemoval [ID] fc076e9ff54638b99cd2caf1f8b5fec7
+
+@@ @@
+             // The channel lock serializes claims for one gateway receipt across all owners.
+             $gateway = Payment::where('id', $payment['payment_id'] ?? 0)->lockForUpdate()->first();
+             if (!$gateway) {
+-                return false;
++                
+             }
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+
+
+11) /app/app/Services/PaymentSettlementService.php:27    [M] CastInt [ID] 146621203944e0604fca0294c2d9cab7
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if (!$user || !$order || $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+12) /app/app/Services/PaymentSettlementService.php:27    [M] CastInt [ID] facd54133713e83704132379eb3e1430
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if (!$user || !$order || (int) $order->user_id !== $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+13) /app/app/Services/PaymentSettlementService.php:27    [M] LogicalOr [ID] 848c977b9016f2e8fa464babc06fbfb6
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if (!$user && !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+14) /app/app/Services/PaymentSettlementService.php:27    [M] LogicalOr [ID] 5d37ca5d5f517da31c57d3d035f48c64
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if ((!$user || !$order) && (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+15) /app/app/Services/PaymentSettlementService.php:27    [M] LogicalOr [ID] 479c7d45ca7ad2fa5eb3717e08e23d45
+
+@@ @@
+             $user = User::where('id', $source->user_id)->lockForUpdate()->first();
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+-            if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
++            if ((!$user || !$order || (int) $order->user_id !== (int) $user->id) && !OrderService::hasValidAmounts($order)) {
+                 return false;
+             }
+             $attempt = null;
+
+
+16) /app/app/Services/PaymentSettlementService.php:27    [M] FalseValue [ID] 2aaac307d5c47151469d7b8a4165c523
+
+@@ @@
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+             if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+-                return false;
++                return true;
+             }
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+
+
+17) /app/app/Services/PaymentSettlementService.php:27    [M] ReturnRemoval [ID] 84e507d271bb85fa4167e9ec8030adfc
+
+@@ @@
+             $order = Order::where('id', $source->id)->lockForUpdate()->first();
+             $this->order = $order;
+             if (!$user || !$order || (int) $order->user_id !== (int) $user->id || !OrderService::hasValidAmounts($order)) {
+-                return false;
++                
+             }
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+
+
+18) /app/app/Services/PaymentSettlementService.php:31    [M] CastInt [ID] 1c34fd99843da79def35e8070c4b387c
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+19) /app/app/Services/PaymentSettlementService.php:31    [M] CastInt [ID] bd9dec3167bde3aec0a5801b36eb2efb
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt || (int) $attempt->order_id !== $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+20) /app/app/Services/PaymentSettlementService.php:31    [M] LogicalOr [ID] 0af121c174864a74e39d201720056f97
+
+@@ @@
+             $attempt = null;
+             if (!empty($payment['attempt_id'])) {
+                 $attempt = DB::table(PaymentAttemptService::TABLE)->where('id', $payment['attempt_id'])->lockForUpdate()->first();
+-                if (!$attempt || (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
++                if (!$attempt && (int) $attempt->order_id !== (int) $order->id || (int) $attempt->user_id !== (int) $user->id || (int) $attempt->payment_id !== (int) $gateway->id || $attempt->method !== $gateway->payment && (int) ($payment['verified_attempt_id'] ?? 0) !== (int) $attempt->id) {
+                     return false;
+                 }
+             } elseif (!$gateway->enable || (int) $order->payment_id !== (int) $gateway->id) {
+
+
+... and 111 more mutants were omitted. Use "--show-mutations=max" to see all of them.
+
+
+272 mutations were generated:
+     141 mutants were killed by Test Framework
+     131 covered mutants were not detected
+
+Metrics:
+         Mutation Code Coverage: 100%
+         Covered Code MSI: 51%
+
+Generated Reports:
+         - /app/tests/evidence/infection-settle.log
+         - /app/tests/evidence/infection-settle-summary.log
+         - /app/tests/evidence/infection-settle.json
+
+Please note that some mutants will inevitably be harmless (i.e. false positives).
+
+Time: 51s. Memory: 0.03GB. Threads: 8

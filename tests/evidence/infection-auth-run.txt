@@ -1,0 +1,41 @@
+
+    ____      ____          __  _
+   /  _/___  / __/__  _____/ /_(_)___  ____
+   / // __ \/ /_/ _ \/ ___/ __/ / __ \/ __ \
+ _/ // / / / __/  __/ /__/ /_/ / /_/ / / / /
+/___/_/ /_/_/  \___/\___/\__/_/\____/_/ /_/
+
+#StandWithUkraine
+
+Infection - PHP Mutation Testing Framework version 0.31.9
+
+[notice] You are running Infection with PCOV enabled.
+
+Running initial test suite...
+
+PHPUnit version: 9.6.38
+
+.: killed by tests, A: killed by SA, M: escaped, U: uncovered
+E: fatal error, X: syntax error, T: timed out, S: skipped, I: ignored
+
+
+Generate mutants...
+
+Processing source code files...
+..........
+
+10 mutations were generated:
+      10 mutants were killed by Test Framework
+
+Metrics:
+         Mutation Code Coverage: 100%
+         Covered Code MSI: 100%
+
+Generated Reports:
+         - /app/tests/evidence/infection-auth.log
+         - /app/tests/evidence/infection-auth-summary.log
+         - /app/tests/evidence/infection-auth.json
+
+Please note that some mutants will inevitably be harmless (i.e. false positives).
+
+Time: 6s. Memory: 22.00MB. Threads: 8

@@ -1,0 +1,184 @@
+PHPUnit 9.6.38 by Sebastian Bergmann and contributors.
+
+...F..EEFF..FFFF.F.F.FF.EEF.EEEEEEF.............................. 65 / 76 ( 85%)
+.......S...                                                       76 / 76 (100%)
+
+Time: 00:01.748, Memory: 22.00 MB
+
+There were 10 errors:
+
+1) Tests\P1\AdminOnlineDeviceSortTest::testDescendingSortUsesAllFilteredUsersBeforePaginationAndIgnoresDeviceLimit
+Illuminate\Validation\ValidationException: The given data was invalid.
+
+/vendor/laravel/framework/src/Illuminate/Support/helpers.php:284
+/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:489
+/app/tests/P1/AdminOnlineDeviceSortTest.php:26
+/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:124
+/pre/app/Http/Controllers/V1/Admin/UserController.php:39
+/pre/app/Http/Controllers/V1/Admin/UserController.php:82
+/app/tests/P1/AdminOnlineDeviceSortTest.php:32
+/app/tests/P1/AdminOnlineDeviceSortTest.php:52
+
+2) Tests\P1\AdminOnlineDeviceSortTest::testAscendingSortTreatsMissingCacheAsZeroAndBreaksTiesById
+Illuminate\Validation\ValidationException: The given data was invalid.
+
+/vendor/laravel/framework/src/Illuminate/Support/helpers.php:284
+/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:489
+/app/tests/P1/AdminOnlineDeviceSortTest.php:26
+/vendor/laravel/framework/src/Illuminate/Macroable/Traits/Macroable.php:124
+/pre/app/Http/Controllers/V1/Admin/UserController.php:39
+/pre/app/Http/Controllers/V1/Admin/UserController.php:82
+/app/tests/P1/AdminOnlineDeviceSortTest.php:32
+/app/tests/P1/AdminOnlineDeviceSortTest.php:89
+
+3) Tests\P1\PasswordLoginLimitTest::testLimitIsOnByDefaultAndExplicitlyCanBeDisabled
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:49
+
+4) Tests\P1\PasswordLoginLimitTest::testEmailBucketsNormalizeCaseAndIdnaAndUnknownEmailsAreCanonical
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:61
+
+5) Tests\P1\PasswordLoginLimitTest::testEmailChangeDoesNotResetAccountBucket
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:106
+
+6) Tests\P1\PasswordLoginLimitTest::testSuccessfulVerificationClearsFailureBucket
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:118
+
+7) Tests\P1\PasswordLoginLimitTest::testFailureBucketExpiresAfterConfiguredWindow
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:128
+
+8) Tests\P1\PasswordLoginLimitTest::testThrottleEnforcesIpLimitAndIgnoresUntrustedForwardedAddress
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:140
+
+9) Tests\P1\PasswordLoginLimitTest::testThrottleEnforcesGlobalLimitAcrossIpAddresses
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:149
+
+10) Tests\P1\PasswordLoginLimitTest::testForwardedClientIpIsUsedWhenProxyIsExplicitlyTrusted
+Error: Class "App\Services\PasswordLoginLimiter" not found
+
+/app/tests/P1/PasswordLoginLimitTest.php:28
+/app/tests/P1/PasswordLoginLimitTest.php:157
+
+--
+
+There were 13 failures:
+
+1) Tests\P1\AdapterSecurityTest::testValidLegacyCallbackSignaturesRemainAccepted
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+ Array &0 (
+     'trade_no' => 'order-1'
+     'callback_no' => 'tx-1'
+-    'amount' => '12.34'
+-    'currency' => 'CNY'
+-    'expected_currency' => 'CNY'
+ )
+
+/app/tests/P1/AdapterSecurityTest.php:120
+
+2) Tests\P1\AdminOnlineDeviceSortTest::testUserFetchAllowsAliveIpSortAndRejectsInjectedSortValues
+Failed asserting that false is true.
+
+/app/tests/P1/AdminOnlineDeviceSortTest.php:103
+
+3) Tests\P1\GatewayAmountRegressionTest::testBothGatewaysRejectMissingOrMismatchedSignedAmountsAndSettleFrozenQuoteOnce
+EPayQrcode accepted missing-money
+
+/app/tests/P1/GatewayAmountRegressionTest.php:64
+
+4) Tests\P1\GatewayAmountRegressionTest::testAdaptersRejectInvalidSignedAmountValues with data set #0 (0)
+EPayQrcode accepted invalid amount 0
+Failed asserting that Array &0 (
+    'trade_no' => 'order-amount'
+    'callback_no' => 'callback-amount'
+) is false.
+
+/app/tests/P1/GatewayAmountRegressionTest.php:153
+
+5) Tests\P1\GatewayAmountRegressionTest::testAdaptersRejectInvalidSignedAmountValues with data set #1 ('0.00')
+EPayQrcode accepted invalid amount 0.00
+Failed asserting that Array &0 (
+    'trade_no' => 'order-amount'
+    'callback_no' => 'callback-amount'
+) is false.
+
+/app/tests/P1/GatewayAmountRegressionTest.php:153
+
+6) Tests\P1\GatewayAmountRegressionTest::testAdaptersRejectInvalidSignedAmountValues with data set #2 ('-0.01')
+EPayQrcode accepted invalid amount -0.01
+Failed asserting that Array &0 (
+    'trade_no' => 'order-amount'
+    'callback_no' => 'callback-amount'
+) is false.
+
+/app/tests/P1/GatewayAmountRegressionTest.php:153
+
+7) Tests\P1\GatewayAmountRegressionTest::testAdaptersRejectInvalidSignedAmountValues with data set #3 ('1.001')
+EPayQrcode accepted invalid amount 1.001
+Failed asserting that Array &0 (
+    'trade_no' => 'order-amount'
+    'callback_no' => 'callback-amount'
+) is false.
+
+/app/tests/P1/GatewayAmountRegressionTest.php:153
+
+8) Tests\P1\GatewayAmountRegressionTest::testSettlementRejectsMissingAmountEvenWhenAttemptAndPaymentMatch
+Failed asserting that true is false.
+
+/app/tests/P1/GatewayAmountRegressionTest.php:167
+
+9) Tests\P1\NodePrivateKeyTest::testUserNodeListHidesGeneratedTlsKeyButPreservesCertificateAndPin
+The user response must not contain tls_settings.dns_env
+Failed asserting that an array does not have the key 'dns_env'.
+
+/app/tests/P1/NodePrivateKeyTest.php:71
+
+10) Tests\P1\NodePrivateKeyTest::testVlessClientSettingsAlsoExcludePrivateKeysAndKeepPublicSettings
+Failed asserting that an array does not have the key 'dns_env'.
+
+/app/tests/P1/NodePrivateKeyTest.php:111
+
+11) Tests\P1\NodePrivateKeyTest::testV2nodeChildrenAcrossProtocolsHideTlsSecretsButKeepPublicCertificateData
+Failed asserting that an array does not have the key 'dns_env'.
+
+/app/tests/P1/NodePrivateKeyTest.php:137
+
+12) Tests\P1\PasswordLoginLimitTest::testControllerAppliesThrottleBeforeCredentialVerification
+Failed asserting that 0 is identical to 1.
+
+/app/tests/P1/PasswordLoginLimitTest.php:82
+
+13) Tests\P1\PasswordLoginLimitTest::testConcurrentRequestsDoNotLoseSharedCacheIncrements
+Fatal error: Uncaught Error: Class "App\Services\PasswordLoginLimiter" not found in /app/tests/P1/PasswordLoginLimitWorker.php:24
+Stack trace:
+#0 {main}
+  thrown in /app/tests/P1/PasswordLoginLimitWorker.php on line 24
+
+Failed asserting that false is true.
+
+/app/tests/P1/PasswordLoginLimitTest.php:186
+
+ERRORS!
+Tests: 76, Assertions: 333, Errors: 10, Failures: 13, Skipped: 1.

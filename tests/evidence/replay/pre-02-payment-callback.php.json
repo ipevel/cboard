@@ -1,0 +1,294 @@
+{
+    "tree": "/pre",
+    "php": "8.2.35",
+    "cases": {
+        "EPayQrcode/underpaid_1.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411ea88b2",
+                "trade_no": "gateway-3ca3b2f7",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.00",
+                "sign": "39e3fe5466c21ce49b142de93583bc8f",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "EPayQrcode/overpaid_101.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411eb3f2b",
+                "trade_no": "gateway-b3315bbc",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "101.00",
+                "sign": "d81083fbc06dc031712a96be4fa9d874",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 2,
+            "attempts": 0
+        },
+        "EPayQrcode/zero_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411ebbedf",
+                "trade_no": "gateway-3830c9ab",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "0.00",
+                "sign": "4baf3559b209a87e731d3778efe751d5",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 3,
+            "attempts": 0
+        },
+        "EPayQrcode/negative_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411ec459d",
+                "trade_no": "gateway-ae3f4d95",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "-0.01",
+                "sign": "ed67b5745fa4b4808cb7f2174fa2e4b5",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 4,
+            "attempts": 0
+        },
+        "EPayQrcode/fractional_cent_1.001": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411eccf8a",
+                "trade_no": "gateway-d4339443",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.001",
+                "sign": "55d473696e8625ec575216ad3b013961",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 5,
+            "attempts": 0
+        },
+        "EPayQrcode/usd_currency_same_number": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411ed51c9",
+                "trade_no": "gateway-40850f8e",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "currency": "USD",
+                "sign": "050267a45ca4e9d270ecb9dd0b096eae",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 6,
+            "attempts": 0
+        },
+        "EPayQrcode/amount_omitted": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411eded2a",
+                "trade_no": "gateway-7385fa73",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "sign": "7bd3c132c3d16a1fc072826d9a2f8987",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 7,
+            "attempts": 0
+        },
+        "EPayQrcode/control_correct_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411ee6904",
+                "trade_no": "gateway-8fd20ec5",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "sign": "5fff99b5c2869d21197743d8c2710904",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 8,
+            "attempts": 0
+        },
+        "Paytaro/underpaid_1.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411ef1191",
+                "trade_no": "gateway-733e9352",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.00",
+                "sign": "95b502b5e0990bc1be50558a2ea3359b",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 9,
+            "attempts": 0
+        },
+        "Paytaro/overpaid_101.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411f062e1",
+                "trade_no": "gateway-99f77b2b",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "101.00",
+                "sign": "be5e46ecaa40b234584bcbd212292fae",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 10,
+            "attempts": 0
+        },
+        "Paytaro/zero_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411f119a2",
+                "trade_no": "gateway-d663601d",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "0.00",
+                "sign": "dfb31a34c8bf1c58dde0ed793917d26e",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 11,
+            "attempts": 0
+        },
+        "Paytaro/negative_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411f1bc21",
+                "trade_no": "gateway-18a68f11",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "-0.01",
+                "sign": "9e62d46917a1e146a5aa9a8982fed757",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 12,
+            "attempts": 0
+        },
+        "Paytaro/fractional_cent_1.001": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411f289a9",
+                "trade_no": "gateway-1b0f97a7",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.001",
+                "sign": "8dd20482ca91d9a18fdd3aec67838968",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 13,
+            "attempts": 0
+        },
+        "Paytaro/usd_currency_same_number": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411f3087e",
+                "trade_no": "gateway-c2df9d80",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "currency": "USD",
+                "sign": "47d328834dc5b050ab53ba75b4c4702b",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 14,
+            "attempts": 0
+        },
+        "Paytaro/amount_omitted": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411f3a778",
+                "trade_no": "gateway-61221a80",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "sign": "20812bbe2e799d1f20121fd3b1d51e0f",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 15,
+            "attempts": 0
+        },
+        "Paytaro/control_correct_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae9411f41a6f",
+                "trade_no": "gateway-3b2b6eb0",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "sign": "e54397f839be68a7da04852fcdb8c12f",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 16,
+            "attempts": 0
+        }
+    }
+}
