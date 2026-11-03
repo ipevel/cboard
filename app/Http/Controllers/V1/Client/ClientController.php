@@ -48,7 +48,7 @@ class ClientController extends Controller
                     if (!is_null($version) && version_compare($version, '1.12.0', '>=')) {
                         $class = new Singbox($user, $servers);
                     } else {
-                        $class = new SingboxOld($user, $servers);
+                        $class = new SingboxOld($user, $servers, ['version' => $version]);
                     }
                     return $this->renderSubscription($request, $class);
                 }
