@@ -1,0 +1,322 @@
+{
+    "tree": "/app",
+    "php": "8.2.35",
+    "cases": {
+        "EPayQrcode/underpaid_1.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd8285f4",
+                "trade_no": "gateway-efe4191e",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.00",
+                "sign": "7f95ad51ae34ab06812d8b01bdc13657",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 0
+        },
+        "EPayQrcode/overpaid_101.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd832a43",
+                "trade_no": "gateway-f8b96a22",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "101.00",
+                "sign": "76ff5167a92f847ed73382bc50f6891a",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 0
+        },
+        "EPayQrcode/zero_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd836599",
+                "trade_no": "gateway-7ecbbcf0",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "0.00",
+                "sign": "ceeada469f7858e5a7a02dc1189548ca",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 0
+        },
+        "EPayQrcode/negative_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd839133",
+                "trade_no": "gateway-049e7eb1",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "-0.01",
+                "sign": "a038e6534057d0b4938ad55eaaf0c47b",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 0
+        },
+        "EPayQrcode/fractional_cent_1.001": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd83b7ec",
+                "trade_no": "gateway-92527037",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.001",
+                "sign": "e077f913888c331230508738001dd8f2",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 0
+        },
+        "EPayQrcode/usd_currency_same_number": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd83fd57",
+                "trade_no": "gateway-b0e44cf4",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "currency": "USD",
+                "sign": "d34c5342ba294724400ea7bf6a7461be",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 0
+        },
+        "EPayQrcode/amount_omitted": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd84500b",
+                "trade_no": "gateway-4de2988a",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "sign": "b18dc56b7104649ad5279bf1dfaa25c4",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 0
+        },
+        "EPayQrcode/control_correct_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd84903b",
+                "trade_no": "gateway-458af22e",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "sign": "c5e8c29f31ce3eb9e1142c8cc2f8394c",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/underpaid_1.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd84f196",
+                "trade_no": "gateway-bd2882c8",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.00",
+                "sign": "eba83f0caadbf20867db234c440b137c",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/overpaid_101.00_of_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd8533ca",
+                "trade_no": "gateway-d95da726",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "101.00",
+                "sign": "787571ba1b23a457bd8e0ea8ac2106a8",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/zero_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd857280",
+                "trade_no": "gateway-d5c1a115",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "0.00",
+                "sign": "f5ac30f83502cd9a02ab2717e638b9b6",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/negative_amount": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd85b1d2",
+                "trade_no": "gateway-c5206b7f",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "-0.01",
+                "sign": "1667d48cf60e3eb467ec88a417767c13",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/fractional_cent_1.001": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd85f61f",
+                "trade_no": "gateway-176744d0",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "1.001",
+                "sign": "99a7a731a072b2d50ddd1d5182280184",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/usd_currency_same_number": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd863741",
+                "trade_no": "gateway-62d949c3",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "currency": "USD",
+                "sign": "581aa9c4ede5a07362bef6f34beeee41",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/amount_omitted": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd866b8f",
+                "trade_no": "gateway-9474d7e2",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "sign": "f04c891d90f86d790092a202d014e6c8",
+                "sign_type": "MD5"
+            },
+            "outcome": "threw",
+            "class": "Symfony\\Component\\HttpKernel\\Exception\\HttpException",
+            "status": 500,
+            "message": "fail",
+            "order_status": 0,
+            "receipts": 1,
+            "attempts": 0
+        },
+        "Paytaro/control_correct_100.00": {
+            "input": {
+                "pid": "fixture-app",
+                "out_trade_no": "proof-order-6ae93bd86a584",
+                "trade_no": "gateway-d47e0306",
+                "trade_status": "TRADE_SUCCESS",
+                "type": "alipay",
+                "name": "order",
+                "money": "100.00",
+                "sign": "4dbe6f4cf763e7110884a0913b7f2457",
+                "sign_type": "MD5"
+            },
+            "outcome": "returned",
+            "value": "success",
+            "order_status": 1,
+            "receipts": 2,
+            "attempts": 0
+        }
+    }
+}

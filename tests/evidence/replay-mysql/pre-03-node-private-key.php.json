@@ -1,0 +1,27 @@
+{
+    "tree": "/pre",
+    "php": "8.2.35",
+    "attack_input": "ServerService::getAvailableVless() for a subscriber on a node whose tls_settings hold tls_key/private_key/ech_key/dns_env plus public cert fields",
+    "node_fields_rendered": [
+        "cert_mode",
+        "server_name",
+        "tls_cert",
+        "dns_env",
+        "public_key",
+        "short_id"
+    ],
+    "tls_secret_fields_present": [
+        "dns_env"
+    ],
+    "tls_secret_values_leaked": [
+        "dns_env"
+    ],
+    "encryption_private_key_present": false,
+    "public_fields_kept": [
+        "tls_cert",
+        "server_name",
+        "public_key",
+        "short_id"
+    ],
+    "raw_json_contains_secret_markers": true
+}

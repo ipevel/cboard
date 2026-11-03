@@ -1,0 +1,53 @@
+{
+    "tree": "/app",
+    "php": "8.2.35",
+    "attack_inputs": {
+        "4a": "PaymentSettlementService::settle() with a valid frozen attempt but no receipt amount/currency (legacy signature-only shape)",
+        "4a_control": "same call with amount and currency equal to the frozen attempt quote",
+        "4b": "PaymentSettlementService::settle() for a Stripe gateway with no frozen attempt row"
+    },
+    "cases": {
+        "4a_EPayQrcode_attempt_without_amount": {
+            "outcome": "returned",
+            "value": false,
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 1
+        },
+        "4a_Paytaro_attempt_without_amount": {
+            "outcome": "returned",
+            "value": false,
+            "order_status": 0,
+            "receipts": 0,
+            "attempts": 2
+        },
+        "4a_control_EPayQrcode_attempt_with_amount": {
+            "outcome": "returned",
+            "value": true,
+            "order_status": 1,
+            "receipts": 1,
+            "attempts": 3
+        },
+        "4a_control_Paytaro_attempt_with_amount": {
+            "outcome": "returned",
+            "value": true,
+            "order_status": 1,
+            "receipts": 2,
+            "attempts": 4
+        },
+        "4b_StripeALL_no_frozen_attempt": {
+            "outcome": "returned",
+            "value": false,
+            "order_status": 0,
+            "receipts": 2,
+            "attempts": 4
+        },
+        "4b_StripeCredit_no_frozen_attempt": {
+            "outcome": "returned",
+            "value": false,
+            "order_status": 0,
+            "receipts": 2,
+            "attempts": 4
+        }
+    }
+}
