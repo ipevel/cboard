@@ -64,15 +64,21 @@ class Bind extends Telegram {
                 break;
         }
         if (!is_string($token) || $token === '') abort(403, 'token is error');
-        DB::transaction(function () use ($token, $message) {
-            $user = User::where('token', $token)->lockForUpdate()->first();
-            if (!$user) abort(500, '用户不存在');
-            if ($user->is_admin || $user->is_staff) abort(403, '管理员和员工请在后台手动设置 Telegram 管理账号 ID');
-            if ($user->banned) abort(403, '账号不可用');
-            if ($user->telegram_id) abort(500, '该账号已经绑定了Telegram账号');
-            // Subscription credentials can only write the ordinary-user binding.
-            $user->telegram_id = $message->chat_id;
-            if (!$user->save()) abort(500, '设置失败');
+        // 同一 Telegram 会话不得绑定到多个账号，锁内校验避免并发写入互相覆盖。
+        Cache::lock('TELEGRAM_OWNER_' . $message->chat_id, 15)->block(3, function () use ($token, $message) {
+            DB::transaction(function () use ($token, $message) {
+                $user = User::where('token', $token)->lockForUpdate()->first();
+                if (!$user) abort(500, '用户不存在');
+                if ($user->is_admin || $user->is_staff) abort(403, '管理员和员工请在后台手动设置 Telegram 管理账号 ID');
+                if ($user->banned) abort(403, '账号不可用');
+                if (User::where('telegram_id', $message->chat_id)->where('id', '!=', $user->id)->exists()) {
+                    abort(409, '该 Telegram 账号已绑定其他用户');
+                }
+                if ($user->telegram_id) abort(500, '该账号已经绑定了Telegram账号');
+                // Subscription credentials can only write the ordinary-user binding.
+                $user->telegram_id = $message->chat_id;
+                if (!$user->save()) abort(500, '设置失败');
+            });
         });
         $telegramService = $this->telegramService;
         $telegramService->sendMessage($message->chat_id, '绑定成功');

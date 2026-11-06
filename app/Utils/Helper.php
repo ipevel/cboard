@@ -110,7 +110,7 @@ class Helper
         if (empty($path)) {
             $path = '/api/v1/client/subscribe';
         } 
-        $subscribeUrls = explode(',', config('v2board.subscribe_url'));
+        $subscribeUrls = explode(',', (string)config('v2board.subscribe_url', ''));
         $subscribeUrl = $subscribeUrls[rand(0, count($subscribeUrls) - 1)];
         switch ($submethod) {
             case 0:
@@ -280,6 +280,7 @@ class Helper
                 $config['type'] = $networkSettings['header']['type'] ?? 'none';
                 break;
 
+            case 'http':
             case 'httpupgrade':
                 $config['path'] = $networkSettings['path'] ?? null;
                 $config['host'] = $networkSettings['host'] ?? null;
@@ -388,10 +389,12 @@ class Helper
 
         $parts = explode(",", $server['port']);
         $firstPort = strpos($parts[0], '-') !== false ? explode('-', $parts[0])[0] : $parts[0];
+        // 订阅链接中的 SNI 属于查询串参数，需按 RFC 3986 转义后再拼接。
+        $serverName = rawurlencode((string)$server['server_name']);
 
         $uri = $server['version'] == 2 ?
-            "hysteria2://{$password}@{$remote}:{$firstPort}/?insecure={$server['insecure']}&sni={$server['server_name']}" :
-            "hysteria://{$remote}:{$firstPort}/?protocol=udp&auth={$password}&insecure={$server['insecure']}&peer={$server['server_name']}&upmbps={$server['down_mbps']}&downmbps={$server['up_mbps']}";
+            "hysteria2://{$password}@{$remote}:{$firstPort}/?insecure={$server['insecure']}&sni={$serverName}" :
+            "hysteria://{$remote}:{$firstPort}/?protocol=udp&auth={$password}&insecure={$server['insecure']}&peer={$serverName}&upmbps={$server['down_mbps']}&downmbps={$server['up_mbps']}";
 
         if (isset($server['obfs']) && isset($server['obfs_password'])) {
             $obfs_password = rawurlencode($server['obfs_password']);
@@ -414,7 +417,7 @@ class Helper
         $firstPort = strpos($parts[0], '-') !== false ? explode('-', $parts[0])[0] : $parts[0];
         $tlsSettings = $server['tls_settings'] ?? [];
         $insecure = $tlsSettings['allow_insecure'] ?? 0;
-        $sni = $tlsSettings['server_name'] ?? '';
+        $sni = rawurlencode((string)($tlsSettings['server_name'] ?? ''));
         $pcs = $tlsSettings['pinned_peer_cert_sha256'] ?? '';
         $uri = "hysteria2://{$password}@{$remote}:{$firstPort}/?insecure={$insecure}&sni={$sni}&pcs={$pcs}";
 
@@ -539,6 +542,7 @@ class Helper
             case 'kcp':
                 self::configureKcpSettings($settings, $config);
                 break;
+            case 'http':
             case 'httpupgrade':
                 self::configureHttpupgradeSettings($settings, $config);
                 break;

@@ -51,7 +51,7 @@ class TelegramController extends Controller
         // To reduce request, only commands contains @ will get the bot name
         if (count($commandName) == 2) {
             $botName = $this->getBotName();
-            if ($commandName[1] === $botName){
+            if (is_string($botName) && strcasecmp($commandName[1], $botName) === 0) {
                 $msg->command = $commandName[0];
             }
         }
@@ -75,8 +75,11 @@ class TelegramController extends Controller
                     return;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
             $this->telegramService->sendMessage($msg->chat_id, $e->getMessage());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Telegram command failed', ['exception' => get_class($e)]);
+            $this->telegramService->sendMessage($msg->chat_id, '操作暂时失败，请稍后重试');
         }
     }
 
@@ -90,8 +93,13 @@ class TelegramController extends Controller
     {
         if (!isset($data['message'])) return;
         if (!isset($data['message']['text'])) return;
+        // 上游更新按字段类型校验，避免畸形 payload 触发类型错误或越权身份。
+        if (!is_string($data['message']['text']) || !is_int($data['message']['chat']['id'] ?? null) ||
+            !is_int($data['message']['message_id'] ?? null) || !is_string($data['message']['chat']['type'] ?? null)) return;
+        if (($data['message']['chat']['type'] ?? '') === 'private' && isset($data['message']['from']['id']) &&
+            (string)$data['message']['from']['id'] !== (string)$data['message']['chat']['id']) return;
         $obj = new \StdClass();
-        $text = explode(' ', $data['message']['text']);
+        $text = preg_split('/\s+/u', trim($data['message']['text'])) ?: [''];
         $obj->command = $text[0];
         $obj->args = array_slice($text, 1);
         $obj->chat_id = $data['message']['chat']['id'];
