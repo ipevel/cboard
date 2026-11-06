@@ -17,6 +17,18 @@ class StripeCurrency
     // Stripe requires two decimal places for these legacy currencies, with no fractional unit.
     private const LEGACY_TWO_DECIMAL_ZERO_ONLY = ['ISK', 'UGX'];
 
+    /**
+     * 把最小货币单位金额格式化为可展示字符串，零小数位币种不补小数。
+     */
+    public static function formatMinor(int $amount, string $currency): string
+    {
+        $currency = strtoupper($currency);
+        if (in_array($currency, self::ZERO_DECIMAL, true) && !in_array($currency, self::LEGACY_TWO_DECIMAL_ZERO_ONLY, true)) {
+            return (string)$amount;
+        }
+        return intdiv($amount, 100) . '.' . str_pad((string)($amount % 100), 2, '0', STR_PAD_LEFT);
+    }
+
     public static function hasFrozenQuote(array $order): bool
     {
         return array_key_exists('gateway_amount_minor', $order) || array_key_exists('gateway_currency', $order);

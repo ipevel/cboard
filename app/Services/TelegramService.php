@@ -102,6 +102,11 @@ class TelegramService {
                         ? $descProp->getValue()
                         : $ref->newInstanceWithoutConstructor()->description;
 
+                    // Telegram 的 setMyCommands 只接受不带斜杠、仅小写字母数字下划线的命令名。
+                    $command = ltrim((string)$command, '/');
+                    if (!preg_match('/\A[a-z0-9_]{1,32}\z/', $command) ||
+                        !is_string($description) || $description === '') continue;
+
                     $commands[] = [
                         'command' => $command,
                         'description' => $description,
@@ -124,12 +129,16 @@ class TelegramService {
     private function request(string $method, array $params = [])
     {
         $curl = new Curl();
-        $curl->get($this->api . $method . '?' . http_build_query($params));
+        // 收紧超时，避免队列与 Webhook 因 Telegram 侧阻塞而长时间挂起。
+        $curl->setOpt(CURLOPT_CONNECTTIMEOUT, 3);
+        $curl->setOpt(CURLOPT_TIMEOUT, 7);
+        // 以表单 POST 提交，避免长文本进入 URL 查询串。
+        $curl->post($this->api . $method, $params);
         $response = $curl->response;
         $curl->close();
         if (!isset($response->ok)) abort(500, '请求失败');
         if (!$response->ok) {
-            abort(500, '来自TG的错误：' . $response->description);
+            abort(500, '来自TG的错误：' . ($response->description ?? 'unknown'));
         }
         return $response;
     }
@@ -144,12 +153,12 @@ class TelegramService {
         });
     }
 
-    public function sendMessageWithAdmin($message, $isStaff = false)
+    public function sendMessageWithAdmin($message, $isStaff = false, string $parseMode = 'markdown')
     {
         if (!config('v2board.telegram_bot_enable', 0)) return;
         $users = self::managementUsers($isStaff)->get();
         foreach ($users as $user) {
-            SendTelegramJob::dispatch($user->telegram_admin_id, $message, $isStaff, $user->id, $user->telegram_admin_version);
+            SendTelegramJob::dispatch($user->telegram_admin_id, $message, $isStaff, $user->id, $user->telegram_admin_version, $parseMode);
         }
     }
 
