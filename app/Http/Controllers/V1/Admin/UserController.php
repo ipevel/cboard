@@ -41,6 +41,14 @@ class UserController extends Controller
         $filters = $request->input('filter');
         if ($filters) {
             foreach ($filters as $k => $filter) {
+                if ($filter['key'] === 'register_ip') {
+                    // Stored values are normalized through inet_pton/inet_ntop at registration.
+                    $ip = filter_var(trim((string)$filter['value']), FILTER_VALIDATE_IP);
+                    if ($ip === false) abort(422, '注册 IP 格式有误');
+                    $packed = inet_pton($ip);
+                    $builder->where('register_ip', $filter['condition'] === '!=' ? '!=' : '=', $packed === false ? $ip : inet_ntop($packed));
+                    continue;
+                }
                 if ($filter['condition'] === '模糊') {
                     $filter['condition'] = 'like';
                     $filter['value'] = "%{$filter['value']}%";

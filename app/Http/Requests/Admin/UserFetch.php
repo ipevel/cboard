@@ -21,9 +21,17 @@ class UserFetch extends FormRequest
             'filter' => 'nullable|array|max:30',
             'ids' => 'nullable|array|min:1|max:500',
             'ids.*' => 'required|integer|min:1|distinct',
-            'filter.*.key' => 'required|in:id,email,transfer_enable,device_limit,u,d,total_used,expired_at,created_at,last_login_at,uuid,token,invite_by_email,invite_user_id,plan_id,banned,remarks,is_admin,is_staff,balance,commission_balance,commission_rate,commission_type,discount,speed_limit,auto_renewal',
+            'filter.*' => ['array', function ($attribute, $filter, $fail) {
+                if (!is_array($filter) || ($filter['key'] ?? null) !== 'register_ip') return;
+                if (!in_array($filter['condition'] ?? null, ['=', '!='], true)
+                    || !is_string($filter['value'] ?? null)
+                    || filter_var(trim($filter['value']), FILTER_VALIDATE_IP) === false) {
+                    $fail('注册 IP 必须为有效的 IPv4 或 IPv6 地址，且仅支持等于或不等于条件');
+                }
+            }],
+            'filter.*.key' => 'required|in:id,email,transfer_enable,device_limit,u,d,total_used,expired_at,created_at,last_login_at,uuid,token,invite_by_email,invite_user_id,plan_id,banned,remarks,is_admin,is_staff,balance,commission_balance,commission_rate,commission_type,discount,speed_limit,auto_renewal,register_ip',
             'filter.*.condition' => 'required|in:>,<,=,>=,<=,模糊,!=',
-            'filter.*.value' => 'required'
+            'filter.*.value' => 'required',
         ];
     }
 

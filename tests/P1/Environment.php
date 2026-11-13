@@ -86,6 +86,7 @@ class Environment
         foreach (['v2_user_email_identity', 'v2_passkey_credential', 'v2_passkey_user', 'v2_payment_receipt', 'v2_payment_attempt', 'v2_commission_log', 'v2_giftcard', 'v2_coupon', 'v2_payment', 'v2_order', 'v2_plan', 'v2_user'] as $table) $schema->dropIfExists($table);
         $schema->create('v2_user', function (Blueprint $t) {
             $t->increments('id'); $t->string('email')->unique(); $t->string('password')->nullable();
+            $t->string('register_ip', 45)->nullable()->index('v2_user_register_ip_index');
             $t->bigInteger('telegram_id')->nullable(); $t->bigInteger('telegram_admin_id')->nullable()->unique();
             $t->unsignedBigInteger('telegram_admin_version')->default(0);
             foreach (['is_admin', 'is_staff', 'banned', 'commission_type', 'auto_renewal'] as $key) $t->integer($key)->default(0);
@@ -117,6 +118,7 @@ class Environment
         });
         $schema->create('v2_payment', function (Blueprint $t) {
             $t->increments('id'); $t->string('uuid'); $t->string('payment'); $t->text('config');
+            $t->string('name')->nullable();
             $t->integer('enable')->default(1); $t->string('notify_domain')->nullable();
             $t->integer('handling_fee_fixed')->nullable(); $t->decimal('handling_fee_percent', 10, 2)->nullable();
             $t->integer('created_at')->nullable(); $t->integer('updated_at')->nullable();

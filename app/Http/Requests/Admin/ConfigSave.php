@@ -14,6 +14,7 @@ class ConfigSave extends FormRequest
         ],
         // invite & commission
         'ticket_status' => 'in:0,1,2',
+        'ticket_create_limit' => 'nullable|integer|min:1',
         'invite_force' => 'in:0,1',
         'invite_commission' => 'integer',
         'invite_gen_limit' => 'integer',
@@ -175,9 +176,12 @@ class ConfigSave extends FormRequest
                     if ($field && (!is_string($captcha[$field] ?? null) || trim($captcha[$field]) === '')) $validator->errors()->add($field, '请填写所选人机验证方式的网站密钥和私钥');
                 }
             }
-            $values = array_merge((array)config('v2board', []), $this->only(['passkey_enabled', 'passkey_rp_id', 'passkey_origins']));
-            if (!empty($values['passkey_enabled']) && !\App\Services\PasskeySettings::validate($values)) {
-                $validator->errors()->add('passkey_enabled', '启用 Passkey 前请填写固定 RP ID 和完整 HTTPS 允许来源；修改 RP ID 前请先关闭功能');
+            $values = $this->only(['passkey_enabled', 'passkey_rp_id', 'passkey_origins']);
+            if ($values) {
+                $values = array_merge((array)config('v2board', []), $values);
+                if (!empty($values['passkey_enabled']) && !\App\Services\PasskeySettings::validate($values)) {
+                    $validator->errors()->add('passkey_enabled', '启用 Passkey 前请填写固定 RP ID 和完整 HTTPS 允许来源；修改 RP ID 前请先关闭功能');
+                }
             }
         });
     }
