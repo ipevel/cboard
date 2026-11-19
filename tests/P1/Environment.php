@@ -87,6 +87,9 @@ class Environment
         $schema->create('v2_user', function (Blueprint $t) {
             $t->increments('id'); $t->string('email')->unique(); $t->string('password')->nullable();
             $t->string('register_ip', 45)->nullable()->index('v2_user_register_ip_index');
+            // install.sql 的 v2_user 含活跃时间列，管理端统计按该列计算在线用户，
+            // 夹具补齐以免后续用例出现列缺失。
+            $t->integer('t')->nullable();
             $t->bigInteger('telegram_id')->nullable(); $t->bigInteger('telegram_admin_id')->nullable()->unique();
             $t->unsignedBigInteger('telegram_admin_version')->default(0);
             foreach (['is_admin', 'is_staff', 'banned', 'commission_type', 'auto_renewal'] as $key) $t->integer($key)->default(0);
